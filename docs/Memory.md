@@ -33,6 +33,35 @@ Render free tier may timeout on very large base64 images (>80KB). Recommend clie
 
 ---
 
+## ✅ Helpline Data Corrections (2026-07-25)
+
+Fixed incorrect helpline numbers across the knowledge base. Removed all references to "15" (Punjab Police emergency number) which was incorrectly assigned to municipal departments.
+
+### Lahore Departments (Corrected)
+| Department | Issue Type | Old (Incorrect) | New (Correct) |
+|------------|-----------|-----------------|---------------|
+| WASA Lahore | Sewerage, Water | 15 | **1334** (Primary) + 15 (Emergency backup only) |
+| LWMC | Garbage, Sanitation | 15 | **1139** |
+| LDA | Potholes, Roads | 15 | **042-99262248 / 042-99262420** |
+| EPD Punjab | Pollution | 15 | **1373** |
+| PITB | Certificates | 15 | **1317** |
+| Excise & Taxation | Property Tax | 15 | **0800-08786** |
+
+### Other Punjab Cities (Corrected)
+- WASA Faisalabad, Multan, Gujranwala, Sialkot, Bahawalpur → **1334** (provincial helpline)
+
+### Non-Punjab Cities (Corrected)
+- Karachi, Islamabad, Peshawar, Quetta departments → **"Not officially available"** (removed incorrect "15")
+
+### Why This Matters
+- 15 is Punjab Police emergency number, NOT for municipal complaints
+- Citizens calling 15 for sewer/garbage issues would be misdirected
+- Accurate helplines build trust and enable successful complaint resolution
+
+**Commit:** `a3b6557` - pushed to GitHub and Render
+
+---
+
 ## ✅ Formal Application Letter Generation System
 
 **Status:** Complete and tested locally (2026-07-25)
