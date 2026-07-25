@@ -14,6 +14,8 @@ from reportlab.lib import colors
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.enums import TA_LEFT, TA_RIGHT
+import arabic_reshaper
+from bidi.algorithm import get_display
 
 # Force UTF-8 output
 sys.stdout.reconfigure(encoding='utf-8')
@@ -38,6 +40,18 @@ def generate_pdf(letter_text, language, filename):
     styles = getSampleStyleSheet()
 
     if language == "urdu":
+        # Reshape Urdu text for proper RTL rendering
+        lines = letter_text.split('\n')
+        reshaped_lines = []
+        for line in lines:
+            if line.strip():  # Non-empty line
+                reshaped = arabic_reshaper.reshape(line)
+                bidi_text = get_display(reshaped)
+                reshaped_lines.append(bidi_text)
+            else:
+                reshaped_lines.append('')
+        formatted = '<br/>'.join(reshaped_lines)
+        
         style = ParagraphStyle(
             'UrduLetter', parent=styles['Normal'],
             fontSize=13, fontName=URDU_FONT,
@@ -45,6 +59,7 @@ def generate_pdf(letter_text, language, filename):
             leading=24, alignment=TA_RIGHT, spaceAfter=4*mm
         )
     else:
+        formatted = letter_text.replace('\n', '<br/>')
         style = ParagraphStyle(
             'EnglishLetter', parent=styles['Normal'],
             fontSize=11, textColor=colors.HexColor('#111827'),
@@ -52,7 +67,6 @@ def generate_pdf(letter_text, language, filename):
             fontName='Times-Roman'
         )
 
-    formatted = letter_text.replace('\n', '<br/>')
     doc.build([Paragraph(formatted, style)])
     size = Path(filename).stat().st_size
     print(f"[OK] {filename} ({size:,} bytes)")
