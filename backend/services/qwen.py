@@ -7,8 +7,8 @@ from openai import OpenAI, APIError, APITimeoutError, APIConnectionError
 
 logger = logging.getLogger(__name__)
 
-MODEL_NAME = "Qwen-Ambassador/Qwen3.7-Plus"
-BASE_URL = "https://api-inference.modelscope.ai/v1"
+MODEL_NAME = os.getenv("QWEN_MODEL_NAME", "Qwen-Ambassador/Qwen3.7-Plus")
+BASE_URL = os.getenv("QWEN_BASE_URL", "https://api-inference.modelscope.ai/v1")
 
 _client: OpenAI | None = None
 
@@ -82,6 +82,7 @@ def classify_text(
             timeout=30,
         )
         content = response.choices[0].message.content or ""
+        logger.info(f"Raw Qwen response: {content}")
     except APITimeoutError:
         logger.error("Qwen API timeout")
         raise

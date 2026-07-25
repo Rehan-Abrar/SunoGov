@@ -1,7 +1,36 @@
 # Memory — SunoGov
 **Live Project State — Update this file as you build**
 
-Last Updated: 2026-07-25
+Last Updated: 2026-07-25 (Phase 3 verification complete)
+
+---
+
+## ✅ Phase 3 Backend — VERIFIED
+
+All Phase 3 backend tasks have been verified and tested:
+
+1. **Model Confirmation:** Using `Qwen-Ambassador/Qwen3.7-Plus` via ModelScope API (confirmed in server logs)
+2. **Raw Qwen Response Captured:**
+   ```json
+   {
+     "issue_id": "broken_road",
+     "city": "Karachi",
+     "language": "english",
+     "confidence": 1.0
+   }
+   ```
+3. **Confidence from Qwen:** The `confidence: 1.0` value comes directly from Qwen's response (not hardcoded)
+4. **No Hardcoded Secrets:** All configuration in environment variables:
+   - `MODELSCOPE_API_KEY` — API authentication
+   - `QWEN_MODEL_NAME` — Model identifier
+   - `QWEN_BASE_URL` — API endpoint
+   - `.env` file is gitignored (not tracked)
+
+### Test Results (4 verified cases):
+- ✅ `"teen din se...gutter ka pani...Lahore"` → `sewer_blockage` → WASA Lahore (confidence 0.95)
+- ✅ `"broken road near F-7 markaz Islamabad"` → `broken_road` → CDA Islamabad (confidence 0.95)
+- ✅ `"لاہور میں بجلی نہیں آ رہی"` → `electricity_outage` → LESCO Lahore (confidence 0.98)
+- ✅ `"broken road in karachi"` → `broken_road` → KMC Karachi (confidence 1.0)
 
 ---
 
