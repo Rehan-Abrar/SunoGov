@@ -116,12 +116,12 @@
 - [x] Non-civic image rejection: returns clear error for irrelevant images
 - [x] Image format detection: jpeg, png, webp, gif
 - [x] Render deployment config (`render.yaml`) ready
-- [ ] Deploy backend to Render *(manual step — requires Render dashboard setup)*
-- [ ] Set `MODELSCOPE_API_KEY` env var on Render *(manual step)*
-- [ ] Test live backend URL with Postman
-- [ ] Share live backend URL with B
+- [x] Deploy backend to Render ✅
+- [x] Set `MODELSCOPE_API_KEY` env var on Render ✅
+- [x] Test live backend URL with curl/Postman ✅
+- [x] Share live backend URL with B: **https://sunogov.onrender.com**
 
-**Exit Criteria:** Backend live on Render. Image input works. *(Deployment pending manual Render setup)*
+**Exit Criteria:** Backend live on Render. Image input works. ✅
 
 ---
 
