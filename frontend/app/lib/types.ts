@@ -36,3 +36,22 @@ export interface DepartmentData {
   official_website: string | null;
   verification_status: string | null;
 }
+
+export interface ApplicationRequest {
+  issue_id: string;
+  city: string;
+  user_name: string;
+  user_address: string;
+  user_phone: string;
+  user_description: string;
+  language: "english" | "urdu";
+  cnic?: string | null;
+  landmark?: string | null;
+  previous_complaint_id?: string | null;
+  supporting_info?: string | null;
+}
+
+export interface ApplicationResponse {
+  letter: string;
+  metadata: Record<string, unknown>;
+}

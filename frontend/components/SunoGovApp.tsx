@@ -41,7 +41,7 @@ import {
   Gauge,
 } from "@phosphor-icons/react";
 import { useTheme, useLang } from "@/app/providers";
-import { classifyIssue } from "@/app/lib/api";
+import { classifyIssue, generateApplication } from "@/app/lib/api";
 import { startSpeechRecognition } from "@/app/lib/speech";
 import type { ClassifyResponse } from "@/app/lib/types";
 
@@ -961,6 +961,35 @@ function buildChannels(dept: ClassifyResponse["department"]): Channel[] {
   return channels;
 }
 
+function FormField({
+  label,
+  required,
+  error,
+  isUrdu,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  error?: string;
+  isUrdu?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className={`block text-[12px] sm:text-[11px] font-medium mb-1.5 ${isUrdu ? "font-['Noto_Nastaliq_Urdu',serif] text-[13px]" : ""} ${error ? "text-error" : "text-muted-foreground"}`}>
+        {label}
+        {required && <span className="text-error ml-0.5">*</span>}
+      </label>
+      {children}
+      {error && (
+        <p className={`mt-1 text-[11px] text-error ${isUrdu ? "font-['Noto_Nastaliq_Urdu',serif]" : ""}`}>
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function ResultsPage({
   navigate,
   result,
@@ -973,6 +1002,27 @@ function ResultsPage({
   const t = T[lang];
   const [activeTab, setActiveTab] = useState<"en" | "ur">("en");
   const [copiedOffice, setCopiedOffice] = useState(false);
+
+  // ── SmartForm state ──
+  const [formOpen, setFormOpen] = useState(false);
+  const [formLang, setFormLang] = useState<"english" | "urdu">("english");
+  const [formLoading, setFormLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [letter, setLetter] = useState<string | null>(null);
+  const [showOptional, setShowOptional] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Mandatory
+  const [userName, setUserName] = useState("");
+  const [userAddress, setUserAddress] = useState("");
+  const [userPhone, setUserPhone] = useState("");
+  const [userDescription, setUserDescription] = useState("");
+  // Optional
+  const [cnic, setCnic] = useState("");
+  const [landmark, setLandmark] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [prevComplaintId, setPrevComplaintId] = useState("");
+  const [supportingInfo, setSupportingInfo] = useState("");
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -1215,6 +1265,389 @@ function ResultsPage({
               </motion.button>
             </div>
           </div>
+        </div>
+
+        {/* ── Generate Formal Letter ──────────────────────────────── */}
+        <div className="sg-result-section">
+          {!formOpen && !letter && (
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              transition={SPRING_SNAPPY}
+              onClick={() => setFormOpen(true)}
+              className="w-full flex items-center justify-center gap-2.5 h-12 sm:h-10 rounded-2xl bg-primary text-primary-foreground text-[15px] sm:text-[13px] font-semibold shadow-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <NotePencil size={18} weight="fill" className="sm:hidden" />
+              <NotePencil size={14} weight="fill" className="hidden sm:block" />
+              Generate Formal Letter
+            </motion.button>
+          )}
+
+          <AnimatePresence>
+            {formOpen && !letter && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                className="overflow-hidden"
+              >
+                <div className="rounded-3xl bg-card border border-border overflow-hidden">
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-3 border-b border-border">
+                    <div className="flex items-center gap-2">
+                      <NotePencil size={14} weight="duotone" className="text-primary sm:hidden" />
+                      <NotePencil size={12} weight="duotone" className="text-primary hidden sm:block" />
+                      <span className="text-[14px] sm:text-[12px] font-semibold text-foreground">Your Details</span>
+                    </div>
+                    <div className="flex items-center gap-0.5">
+                      {(["english", "urdu"] as const).map((l) => (
+                        <motion.button
+                          key={l}
+                          whileTap={{ scale: 0.93 }}
+                          transition={SPRING_SNAPPY}
+                          onClick={() => setFormLang(l)}
+                          className={`relative px-3 sm:px-2.5 h-7 sm:h-5 rounded-md text-[12px] sm:text-[10px] font-medium focus-visible:outline-none ${
+                            l === "urdu" ? "font-['Noto_Nastaliq_Urdu',serif]" : ""
+                          } ${formLang === l ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                        >
+                          {formLang === l && (
+                            <motion.span
+                              layoutId="form-lang-pill"
+                              className="absolute inset-0 rounded-md bg-muted shadow-sm"
+                              transition={{ type: "spring", stiffness: 500, damping: 32 }}
+                            />
+                          )}
+                          <span className="relative z-10">{l === "english" ? "English" : "اردو"}</span>
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="px-5 sm:px-6 py-4 sm:py-4 space-y-4">
+                    {/* Error */}
+                    {formError && (
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-error/10 text-error text-[13px]">
+                        <Warning size={14} weight="fill" />
+                        {formError}
+                      </div>
+                    )}
+
+                    {/* Mandatory fields */}
+                    <div className="space-y-3">
+                      <FormField
+                        label={formLang === "urdu" ? "پورا نام" : "Full Name"}
+                        required
+                        error={errors.userName}
+                        isUrdu={formLang === "urdu"}
+                      >
+                        <input
+                          type="text"
+                          value={userName}
+                          onChange={(e) => { setUserName(e.target.value); setErrors((p) => ({ ...p, userName: "" })); }}
+                          dir={formLang === "urdu" ? "rtl" : "ltr"}
+                          placeholder={formLang === "urdu" ? "محمد احمد" : "Muhammad Ahmed"}
+                          className="w-full h-10 sm:h-9 px-3 rounded-xl bg-input-background border border-border text-[14px] sm:text-[13px] text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary transition-colors"
+                        />
+                      </FormField>
+
+                      <FormField
+                        label={formLang === "urdu" ? "مکمل پتہ" : "Complete Address"}
+                        required
+                        error={errors.userAddress}
+                        isUrdu={formLang === "urdu"}
+                      >
+                        <input
+                          type="text"
+                          value={userAddress}
+                          onChange={(e) => { setUserAddress(e.target.value); setErrors((p) => ({ ...p, userAddress: "" })); }}
+                          dir={formLang === "urdu" ? "rtl" : "ltr"}
+                          placeholder={formLang === "urdu" ? "گھر نمبر، گلی، محلہ، شہر" : "House #, Street, Area, City"}
+                          className="w-full h-10 sm:h-9 px-3 rounded-xl bg-input-background border border-border text-[14px] sm:text-[13px] text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary transition-colors"
+                        />
+                      </FormField>
+
+                      <FormField
+                        label={formLang === "urdu" ? "رابطہ نمبر" : "Contact Number"}
+                        required
+                        error={errors.userPhone}
+                        isUrdu={formLang === "urdu"}
+                      >
+                        <input
+                          type="tel"
+                          value={userPhone}
+                          onChange={(e) => { setUserPhone(e.target.value); setErrors((p) => ({ ...p, userPhone: "" })); }}
+                          dir="ltr"
+                          placeholder="03XX-XXXXXXX"
+                          className="w-full h-10 sm:h-9 px-3 rounded-xl bg-input-background border border-border text-[14px] sm:text-[13px] text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary transition-colors font-['JetBrains_Mono',monospace]"
+                        />
+                      </FormField>
+
+                      <FormField
+                        label={formLang === "urdu" ? "مسئلے کی تفصیل" : "Describe the Issue"}
+                        required
+                        error={errors.userDescription}
+                        isUrdu={formLang === "urdu"}
+                      >
+                        <textarea
+                          value={userDescription}
+                          onChange={(e) => { setUserDescription(e.target.value); setErrors((p) => ({ ...p, userDescription: "" })); }}
+                          dir={formLang === "urdu" ? "rtl" : "ltr"}
+                          placeholder={formLang === "urdu" ? "مسئلے کی تفصیل بیان کریں..." : "Describe the issue in detail..."}
+                          className={`w-full min-h-[80px] px-3 py-2 rounded-xl bg-input-background border border-border text-[14px] sm:text-[13px] text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary transition-colors resize-none ${
+                            formLang === "urdu" ? "font-['Noto_Nastaliq_Urdu',serif] leading-[2]" : ""
+                          }`}
+                        />
+                      </FormField>
+                    </div>
+
+                    {/* Optional fields toggle */}
+                    <div>
+                      <motion.button
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setShowOptional((v) => !v)}
+                        className="flex items-center gap-2 text-[12px] sm:text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <motion.span animate={{ rotate: showOptional ? 180 : 0 }} transition={SPRING_SNAPPY}>
+                          <CaretDown size={10} weight="bold" />
+                        </motion.span>
+                        {formLang === "urdu" ? "اضافی معلومات (اختیاری)" : "Additional details (optional)"}
+                      </motion.button>
+
+                      <AnimatePresence>
+                        {showOptional && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.25 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pt-3 space-y-3">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <FormField label="CNIC" isUrdu={false}>
+                                  <input
+                                    type="text"
+                                    value={cnic}
+                                    onChange={(e) => setCnic(e.target.value)}
+                                    dir="ltr"
+                                    placeholder="XXXXX-XXXXXXX-X"
+                                    className="w-full h-10 sm:h-9 px-3 rounded-xl bg-input-background border border-border text-[14px] sm:text-[13px] text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary transition-colors font-['JetBrains_Mono',monospace]"
+                                  />
+                                </FormField>
+                                <FormField label={formLang === "urdu" ? "نشانِ منزل" : "Landmark"} isUrdu={formLang === "urdu"}>
+                                  <input
+                                    type="text"
+                                    value={landmark}
+                                    onChange={(e) => setLandmark(e.target.value)}
+                                    dir={formLang === "urdu" ? "rtl" : "ltr"}
+                                    placeholder={formLang === "urdu" ? "قریبی نشان" : "Nearby landmark"}
+                                    className="w-full h-10 sm:h-9 px-3 rounded-xl bg-input-background border border-border text-[14px] sm:text-[13px] text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary transition-colors"
+                                  />
+                                </FormField>
+                              </div>
+                              <FormField label={formLang === "urdu" ? "ای میل" : "Email"} isUrdu={false}>
+                                <input
+                                  type="email"
+                                  value={userEmail}
+                                  onChange={(e) => setUserEmail(e.target.value)}
+                                  dir="ltr"
+                                  placeholder="email@example.com"
+                                  className="w-full h-10 sm:h-9 px-3 rounded-xl bg-input-background border border-border text-[14px] sm:text-[13px] text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary transition-colors"
+                                />
+                              </FormField>
+                              <FormField label={formLang === "urdu" ? "پچھلی شکایت کا نمبر" : "Previous Complaint ID"} isUrdu={false}>
+                                <input
+                                  type="text"
+                                  value={prevComplaintId}
+                                  onChange={(e) => setPrevComplaintId(e.target.value)}
+                                  dir="ltr"
+                                  placeholder={formLang === "urdu" ? "اگر کوئی ہو" : "If any"}
+                                  className="w-full h-10 sm:h-9 px-3 rounded-xl bg-input-background border border-border text-[14px] sm:text-[13px] text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary transition-colors font-['JetBrains_Mono',monospace]"
+                                />
+                              </FormField>
+                              <FormField label={formLang === "urdu" ? "مزید معلومات" : "Supporting Information"} isUrdu={formLang === "urdu"}>
+                                <textarea
+                                  value={supportingInfo}
+                                  onChange={(e) => setSupportingInfo(e.target.value)}
+                                  dir={formLang === "urdu" ? "rtl" : "ltr"}
+                                  placeholder={formLang === "urdu" ? "کوئی اضافی تفصیل..." : "Any additional details..."}
+                                  className={`w-full min-h-[60px] px-3 py-2 rounded-xl bg-input-background border border-border text-[14px] sm:text-[13px] text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary transition-colors resize-none ${
+                                    formLang === "urdu" ? "font-['Noto_Nastaliq_Urdu',serif] leading-[2]" : ""
+                                  }`}
+                                />
+                              </FormField>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <motion.button
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setFormOpen(false)}
+                        className="flex-1 h-10 sm:h-8 rounded-xl border border-border text-[13px] sm:text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                      >
+                        {formLang === "urdu" ? "منسوخ کریں" : "Cancel"}
+                      </motion.button>
+                      <motion.button
+                        whileHover={!formLoading ? { scale: 1.01 } : {}}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={async () => {
+                          const e: Record<string, string> = {};
+                          if (!userName.trim()) e.userName = formLang === "urdu" ? "نام درج کریں" : "Name is required";
+                          if (!userAddress.trim()) e.userAddress = formLang === "urdu" ? "پتہ درج کریں" : "Address is required";
+                          if (!userPhone.trim()) e.userPhone = formLang === "urdu" ? "نمبر درج کریں" : "Phone is required";
+                          if (!userDescription.trim()) e.userDescription = formLang === "urdu" ? "تفصیل درج کریں" : "Description is required";
+                          if (Object.keys(e).length) { setErrors(e); return; }
+
+                          setFormLoading(true);
+                          setFormError(null);
+                          try {
+                            const res = await generateApplication({
+                              issue_id: result.issue_id,
+                              city: result.city,
+                              user_name: userName.trim(),
+                              user_address: userAddress.trim(),
+                              user_phone: userPhone.trim(),
+                              user_description: userDescription.trim(),
+                              language: formLang,
+                              cnic: cnic.trim() || null,
+                              landmark: landmark.trim() || null,
+                              previous_complaint_id: prevComplaintId.trim() || null,
+                              supporting_info: supportingInfo.trim() || null,
+                            });
+                            setLetter(res.letter);
+                            setFormOpen(false);
+                          } catch (err: any) {
+                            setFormError(err.message || "Failed to generate letter");
+                          } finally {
+                            setFormLoading(false);
+                          }
+                        }}
+                        disabled={formLoading}
+                        className="flex-1 flex items-center justify-center gap-2 h-10 sm:h-8 rounded-xl bg-primary text-primary-foreground text-[13px] sm:text-[12px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                      >
+                        {formLoading ? (
+                          <motion.span animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}>
+                            <CircleNotch size={14} weight="bold" />
+                          </motion.span>
+                        ) : (
+                          <>
+                            <PaperPlaneTilt size={14} weight="fill" />
+                            {formLang === "urdu" ? "شکایت بنائیں" : "Generate Letter"}
+                          </>
+                        )}
+                      </motion.button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Letter Preview */}
+          <AnimatePresence>
+            {letter && (
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <p className="text-[12px] sm:text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.08em] mb-3 sm:mb-2 px-1">
+                  {formLang === "urdu" ? "آپ کی شکایت" : "Your Formal Letter"}
+                </p>
+                <div className="rounded-3xl bg-card border border-border overflow-hidden">
+                  <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 sm:py-2.5 border-b border-border">
+                    <div className="flex items-center gap-2">
+                      <FileText size={14} weight="duotone" className="text-muted-foreground sm:hidden" />
+                      <FileText size={12} weight="duotone" className="text-muted-foreground hidden sm:block" />
+                      <span className="text-[13px] sm:text-[11px] text-muted-foreground">
+                        {formLang === "urdu" ? "application-ur.txt" : "application-en.txt"}
+                      </span>
+                    </div>
+                    <CopyButton text={letter} />
+                  </div>
+
+                  <div className="p-5 sm:p-6">
+                    <pre
+                      dir={formLang === "urdu" ? "rtl" : "ltr"}
+                      id="letter-content"
+                      className={`whitespace-pre-wrap text-[14px] sm:text-[13px] text-foreground leading-relaxed ${
+                        formLang === "urdu"
+                          ? "font-['Noto_Nastaliq_Urdu',serif] text-[16px] sm:text-[14px] leading-[2.2] text-right"
+                          : "font-['JetBrains_Mono',monospace]"
+                      }`}
+                    >
+                      {letter}
+                    </pre>
+                  </div>
+
+                  <div className="px-5 sm:px-6 py-4 sm:py-3 border-t border-border flex items-center gap-2">
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        const blob = new Blob([letter], { type: "text/plain;charset=utf-8" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `application-${formLang === "urdu" ? "ur" : "en"}.txt`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 h-10 sm:h-8 rounded-xl border border-border text-[13px] sm:text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                    >
+                      <DownloadSimple size={14} weight="bold" className="sm:hidden" />
+                      <DownloadSimple size={12} weight="bold" className="hidden sm:block" />
+                      .txt
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        const printWindow = window.open("", "_blank");
+                        if (!printWindow) return;
+                        const isUrdu = formLang === "urdu";
+                        printWindow.document.write(`<!DOCTYPE html><html><head><title>SunoGov — Application</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 25mm; }
+body { font-family: ${isUrdu ? "'Noto Nastaliq Urdu', serif" : "'JetBrains Mono', monospace"}; font-size: ${isUrdu ? "16px" : "13px"}; line-height: ${isUrdu ? "2.2" : "1.7"}; color: #111; direction: ${isUrdu ? "rtl" : "ltr"}; text-align: ${isUrdu ? "right" : "left"}; }
+pre { white-space: pre-wrap; word-wrap: break-word; margin: 0; }
+.header { text-align: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #ddd; }
+.header h1 { font-size: 20px; margin: 0 0 4px; }
+.header p { font-size: 11px; color: #888; margin: 0; }
+@media print { body { -webkit-print-color-adjust: exact; } }
+</style></head><body>
+<div class="header"><h1>SunoGov</h1><p>Apni Baat, Sahi Jagah</p></div>
+<pre>${letter.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
+</body></html>`);
+                        printWindow.document.close();
+                        setTimeout(() => { printWindow.print(); }, 400);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 h-10 sm:h-8 rounded-xl bg-primary text-primary-foreground text-[13px] sm:text-[12px] font-semibold hover:opacity-90 transition-opacity"
+                    >
+                      <DownloadSimple size={14} weight="bold" className="sm:hidden" />
+                      <DownloadSimple size={12} weight="bold" className="hidden sm:block" />
+                      {formLang === "urdu" ? "PDF ڈاؤنلوڈ" : "Download PDF"}
+                    </motion.button>
+                  </div>
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={SPRING_SNAPPY}
+                  onClick={() => { setLetter(null); setFormOpen(false); }}
+                  className="w-full mt-3 h-9 sm:h-7 rounded-full border border-border text-[13px] sm:text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-card transition-colors"
+                >
+                  {formLang === "urdu" ? "دوبارہ بنائیں" : "Regenerate letter"}
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* ── File another ──────────────────────────────────────────── */}
