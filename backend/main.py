@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -8,6 +9,8 @@ from routers import classify
 from services.kb import load_knowledge_base
 
 load_dotenv()
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
 
 app = FastAPI(title="SunoGov API", version="1.0")
 

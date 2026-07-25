@@ -1,9 +1,14 @@
+import logging
+
 from fastapi import APIRouter, HTTPException
+from openai import APITimeoutError, APIConnectionError, APIError
 
 from services.models import ClassifyRequest, ClassifyResponse, DepartmentResponse, ComplaintResponse
-from services.qwen import classify_text
-from services.kb import resolve, resolve_with_alias, get_department
+from services.qwen import classify_text, classify_image
+from services.kb import resolve, resolve_with_alias, get_department, get_all_issue_ids, get_all_cities
 from services.complaint import generate_complaint
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -15,15 +20,32 @@ async def health():
 
 @router.post("/classify", response_model=ClassifyResponse)
 async def classify(req: ClassifyRequest):
-    extraction = await classify_text(req.text, req.image_base64)
+    issue_ids = get_all_issue_ids()
+    cities = get_all_cities()
+
+    try:
+        if req.image_base64:
+            extraction = classify_image(req.image_base64, req.text, issue_ids, cities)
+        else:
+            extraction = classify_text(req.text or "No description provided", issue_ids, cities)
+    except APITimeoutError:
+        raise HTTPException(status_code=504, detail="AI classification timed out. Please try again.")
+    except APIConnectionError:
+        raise HTTPException(status_code=503, detail="AI service unavailable. Please try again.")
+    except (APIError, ValueError) as e:
+        logger.error(f"Classification failed: {e}")
+        raise HTTPException(status_code=500, detail="AI classification failed. Please try again.")
 
     issue_id = extraction.get("issue_id", "")
-    city = extraction.get("city", "") or req.city_hint or ""
+    city = extraction.get("city") or req.city_hint or ""
     language = extraction.get("language", "english")
     confidence = extraction.get("confidence", 0.0)
 
     if not city:
-        raise HTTPException(status_code=422, detail="City could not be determined. Please provide a city_hint.")
+        raise HTTPException(
+            status_code=422,
+            detail="City could not be determined. Please provide a city_hint in the request.",
+        )
 
     issue = resolve(city, issue_id)
 
@@ -31,9 +53,24 @@ async def classify(req: ClassifyRequest):
         issue = resolve_with_alias(city, issue_id)
 
     if not issue:
+        for other_city in cities:
+            if other_city.lower() != city.lower():
+                issue = resolve(other_city, issue_id)
+                if issue:
+                    city = other_city
+                    break
+
+    if not issue:
+        for other_city in cities:
+            issue = resolve_with_alias(other_city, issue_id)
+            if issue:
+                city = other_city
+                break
+
+    if not issue:
         raise HTTPException(
             status_code=404,
-            detail=f"Issue '{issue_id}' not found for city '{city}'",
+            detail=f"Issue '{issue_id}' not found in any city. The AI may have misclassified.",
         )
 
     dept_data = get_department(issue["department_id"])

@@ -77,16 +77,16 @@
 
 **Goal:** Replace stub with real Qwen calls.
 
-- [ ] Write `classify_with_qwen(text)` in `qwen.py` with correct classification prompt
-- [ ] Write `classify_with_qwen_vision(image_base64)` for image input
-- [ ] Parse and validate Qwen JSON response — strip markdown fences before parsing
-- [ ] Handle all error cases: invalid JSON, unknown `issue_id`, missing `city`, timeout
-- [ ] If `confidence < 0.7` or `issue_id` invalid → trigger alias fallback
-- [ ] Add complaint generation in `complaint.py`: template fill for Urdu + English
-- [ ] Optional: second Qwen call to rewrite/personalize complaint
-- [ ] Test end-to-end: `"teen din se hamari gali mein gutter ka pani khara hai"` → WASA Lahore
+- [x] Write `classify_with_qwen(text)` in `qwen.py` with correct classification prompt
+- [x] Write `classify_with_qwen_vision(image_base64)` for image input
+- [x] Parse and validate Qwen JSON response — strip markdown fences before parsing
+- [x] Handle all error cases: invalid JSON, unknown `issue_id`, missing `city`, timeout
+- [x] If `confidence < 0.7` or `issue_id` invalid → trigger alias fallback
+- [x] Add complaint generation in `complaint.py`: template fill for Urdu + English
+- [x] Optional: second Qwen call to rewrite/personalize complaint *(skipped — templates work well, listed in cut list)*
+- [x] Test end-to-end: `"teen din se hamari gali mein gutter ka pani khara hai"` → WASA Lahore
 
-**Exit Criteria:** Full pipeline live. Urdu input → correct routing → bilingual complaint.
+**Exit Criteria:** Full pipeline live. Urdu input → correct routing → bilingual complaint. ✅
 
 ---
 

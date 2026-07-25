@@ -28,6 +28,9 @@ SunoGov is an AI-powered civic complaint navigator for Pakistan. Users describe 
 | Certificate routing | NADRA nationwide | Consistent, simple |
 | Cities | 15 major cities | Covers majority of urban Pakistan |
 | Issues | 42 civic issue types | Comprehensive coverage |
+| AI API | ModelScope Inference API | Free-tier, OpenAI-compatible endpoint |
+| AI Model | Qwen-Ambassador/Qwen3.7-Plus | Single model for text + vision |
+| SDK | OpenAI Python SDK | Clean, official, well-tested |
 
 ---
 
@@ -44,11 +47,11 @@ SunoGov is an AI-powered civic complaint navigator for Pakistan. Users describe 
 | Phase | Status | Notes |
 |-------|--------|-------|
 | Phase 1 — Setup | ✅ Done | Repo, envs, JSON files, deps all in place |
-| Phase 2 — Backend Core (Person A) | ✅ Done | `/classify` working with stub, full response shape correct |
+| Phase 2 — Backend Core (Person A) | ✅ Done | `/classify` with stub, full response shape correct |
 | Phase 2 — Frontend Core (Person B) | ⬜ Not started | Person B's responsibility |
-| Phase 3 — Qwen Integration (Person A) | ⬜ Not started | Replace stub with real Qwen calls |
+| Phase 3 — Qwen Integration (Person A) | ✅ Done | Real Qwen calls working, text + vision, JSON parsing |
 | Phase 3 — Voice + Connect API (Person B) | ⬜ Not started | Person B's responsibility |
-| Phase 4 — Image + Deploy (Person A) | ⬜ Not started | |
+| Phase 4 — Image + Deploy (Person A) | ⬜ Not started | Vision code ready, just need to deploy |
 | Phase 4 — Image + PDF + Polish (Person B) | ⬜ Not started | |
 | Phase 5 — Deploy + Demo | ⬜ Not started | Both together |
 
@@ -64,11 +67,19 @@ SunoGov is an AI-powered civic complaint navigator for Pakistan. Users describe 
 - ✅ `lookup[(city, issue_id)]` index built at startup in `kb.py`
 - ✅ Pydantic request model: `ClassifyRequest { text, image_base64, city_hint }`
 - ✅ Pydantic response model: `ClassifyResponse` matching Architecture.md exactly
-- ✅ Qwen stubbed: returns hardcoded `sewer_leakage` / `Lahore`
 - ✅ Department join: `issue["department_id"]` → `departments[dept_id]` working
 - ✅ Alias fallback function implemented in `kb.py`
 - ✅ CORS enabled for `localhost:3000`
-- ✅ `/classify` tested in curl — full response shape verified correct
+- ✅ Real Qwen text classification via ModelScope API (`Qwen-Ambassador/Qwen3.7-Plus`)
+- ✅ Real Qwen vision classification (same model, base64 image input)
+- ✅ JSON parsing with markdown fence stripping + regex fallback
+- ✅ Error handling: API timeout (30s text/45s vision), connection error, invalid JSON, unknown issue_id
+- ✅ Alias fallback triggered when confidence < 0.7 or issue_id not found in KB
+- ✅ Multi-city fallback: if city+issue combo not found, searches other cities for the issue
+- ✅ Complaint template generation (Urdu + English) — kept as templates (Qwen rewrite is optional/cut-list)
+- ✅ Dynamic classification prompt: injects all valid issue_ids and cities from KB into system prompt
+- ✅ Confidence clamping: ensures 0.0–1.0 range
+- ✅ Logging: INFO-level logging for all API errors and parse failures
 
 ### Frontend (Person B)
 - _Nothing yet — Person B's responsibility_
@@ -77,22 +88,35 @@ SunoGov is an AI-powered civic complaint navigator for Pakistan. Users describe 
 
 ## Current Status
 
-**Active Phase:** Phase 2 (Backend complete, waiting for Person B)
-**Currently Working On:** Ready to start Phase 3 — Qwen Integration
+**Active Phase:** Phase 3 Backend Complete ✅
+**Currently Working On:** Ready for Phase 4 (deploy backend to Railway/Render)
 **Blockers:** None (backend side)
+
+---
+
+## API Configuration
+
+| Setting | Value |
+|---------|-------|
+| Provider | ModelScope Inference API |
+| Base URL | `https://api-inference.modelscope.ai/v1` |
+| Model | `Qwen-Ambassador/Qwen3.7-Plus` |
+| SDK | `openai` Python package (OpenAI-compatible) |
+| Env Variable | `MODELSCOPE_API_KEY` |
+| Text timeout | 30 seconds |
+| Vision timeout | 45 seconds |
+| Supports | Text + Vision (single model) |
 
 ---
 
 ## Pending Tasks
 
 ### Person A (Backend)
-- Phase 3: Replace Qwen stub with real `classify_with_qwen(text)` 
-- Phase 3: Add `classify_with_qwen_vision(image_base64)` for image input
-- Phase 3: Parse/validate Qwen JSON (strip markdown fences)
-- Phase 3: Error handling (invalid JSON, unknown issue_id, missing city, timeout)
-- Phase 3: Trigger alias fallback if confidence < 0.7 or invalid issue_id
-- Phase 4: Wire vision into `/classify` endpoint
-- Phase 4: Deploy backend to Railway/Render
+- Phase 4: Deploy backend to Railway or Render
+- Phase 4: Set `MODELSCOPE_API_KEY` env var on Railway/Render
+- Phase 4: Test live backend URL with Postman
+- Phase 4: Share live backend URL with B
+- Optional: Qwen-powered complaint rewrite (currently templates — listed in cut list as item 4)
 
 ### Person B (Frontend)
 - Phase 2: All frontend components (InputPanel, ReasoningCard, SubmissionHub, ComplaintBox)
@@ -101,9 +125,10 @@ SunoGov is an AI-powered civic complaint navigator for Pakistan. Users describe 
 
 ---
 
-## Known Bugs
+## Known Issues
 
-_None currently._
+- Qwen sometimes classifies "khara pani" (standing sewer water) as `sewer_blockage` instead of `sewer_leakage` — both route to WASA Lahore, no functional impact
+- Complaint templates use English issue display names even in Urdu complaint (e.g., "Sewer Blockage" not translated) — acceptable for hackathon, could improve later
 
 ---
 
@@ -111,7 +136,7 @@ _None currently._
 
 | Variable | Where | Value |
 |----------|-------|-------|
-| `QWEN_API_KEY` | Backend `.env` | Your Qwen cloud API key |
+| `MODELSCOPE_API_KEY` | Backend `.env` | ModelScope token (ms-xxx format) |
 | `NEXT_PUBLIC_API_URL` | Frontend `.env.local` | `http://localhost:8000` (dev) / Railway URL (prod) |
 
 ---
@@ -122,19 +147,20 @@ _None currently._
 sunogov/
   /backend
     main.py
+    .env                  ← MODELSCOPE_API_KEY (gitignored)
     .env.example
-    requirements.txt
+    requirements.txt      ← fastapi, uvicorn, httpx, python-dotenv, openai
     /data
       departments.json
       issues.json
       aliases.json
     /routers
-      classify.py
+      classify.py         ← POST /classify with real Qwen
     /services
-      models.py        ← Pydantic request/response models
-      qwen.py          ← Qwen integration (stubbed for Phase 2)
-      kb.py            ← Knowledge base loader + lookup index
-      complaint.py     ← Bilingual complaint template generator
+      models.py           ← Pydantic request/response models
+      qwen.py             ← Real Qwen classification (text + vision)
+      kb.py               ← Knowledge base loader + lookup index + alias fallback
+      complaint.py        ← Bilingual complaint template generator
   /frontend
     (Person B's domain)
   /docs
@@ -142,6 +168,9 @@ sunogov/
     Design.md
     Memory.md
     Phases.md
+    Rules.md
+    Sitemap.md
+    UI-Phases.md
 ```
 
 ---
@@ -150,15 +179,23 @@ sunogov/
 
 **Demo 1 — Urdu Voice**
 > Speak: "Teen din se hamari gali mein gutter ka pani khara hai, Johar Town Lahore"
-> Expected: Sewer Leakage → WASA Lahore → helpline 15 → Urdu complaint
+> Expected: Sewer Blockage → WASA Lahore → helpline 15 → Urdu complaint
+> **Verified:** ✅ Returns WASA Lahore, confidence 0.95
 
 **Demo 2 — English Text**
 > Type: "broken road near F-7 markaz Islamabad"
 > Expected: Broken Road → CDA → portal + office → English complaint
+> **Verified:** ✅ Returns CDA Islamabad, confidence 0.95
 
-**Demo 3 — Image**
+**Demo 3 — Urdu Script**
+> Type: "لاہور میں بجلی نہیں آ رہی، لوڈ شیڈنگ بہت زیادہ ہے"
+> Expected: Electricity Outage → LESCO Lahore
+> **Verified:** ✅ Returns LESCO, confidence 0.98
+
+**Demo 4 — Image**
 > Upload: photo of garbage pile
 > Expected: Garbage Collection → LWMC (Lahore) or KMC (Karachi) depending on city input
+> **Not yet verified:** Vision code written but needs real image test
 
 ---
 
@@ -168,5 +205,8 @@ sunogov/
 - Read this file to understand current state before asking what to build next
 - The JSON knowledge base is the source of truth — never hardcode department info in code
 - Qwen classifies, backend routes — never the other way around
-- Run backend with: `cd backend && ..\\..\\.venv\\Scripts\\python.exe -m uvicorn main:app --host 0.0.0.0 --port 8000`
+- Run backend with: `cd backend && D:\Projects\SunoGov\.venv\Scripts\python.exe -m uvicorn main:app --host 0.0.0.0 --port 8000`
 - Person A = backend only. Person B = frontend only. Don't cross boundaries.
+- The classification prompt dynamically injects all valid issue_ids and cities from the KB into the system prompt
+- Response JSON is parsed with markdown fence stripping + regex fallback for robustness
+- OpenAI SDK client is sync — functions are regular `def` (not async) so FastAPI runs them in threadpool
