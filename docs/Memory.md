@@ -33,6 +33,90 @@ Render free tier may timeout on very large base64 images (>80KB). Recommend clie
 
 ---
 
+## ✅ Formal Application Letter Generation System
+
+**Status:** Complete and tested locally (2026-07-25)
+
+### Overview
+Qwen-powered formal complaint letter generation in English and Urdu. Creates submission-ready formal applications for Pakistani government departments.
+
+### API Endpoint
+`POST /generate-application`
+
+**Input:**
+```json
+{
+  "issue_id": "sewer_blockage",
+  "city": "Lahore",
+  "user_name": "Muhammad Ahmed Khan",
+  "user_address": "House 45, Street 12, Johar Town, Lahore",
+  "user_phone": "+92-300-1234567",
+  "user_description": "There has been standing sewer water in our street for three days",
+  "language": "english",  // or "urdu"
+  "cnic": "35202-1234567-8",  // optional
+  "landmark": "Near Al-Falah Park",  // optional
+  "previous_complaint_id": "",  // optional
+  "supporting_info": "This issue has been ongoing for over a week"  // optional
+}
+```
+
+**Output:**
+```json
+{
+  "letter": "Full formal letter text...",
+  "metadata": {
+    "language": "english",
+    "issue": "Sewer Blockage",
+    "city": "Lahore",
+    "department": "",
+    "tokens_used": 2665
+  }
+}
+```
+
+### Features
+- **Formal letter format:** From address → Date → To address (with officer title) → Subject → Body → Closing → Signature
+- **Officer titles:** All 46 departments have proper titles (e.g., "The Managing Director, WASA Lahore")
+- **Bilingual:** English and Urdu support
+- **Qwen-powered:** Professional letter generation using AI (not templates)
+- **Submission-ready:** No placeholders, no metadata in the letter
+- **Urdu RTL:** Proper right-to-left rendering with Noto Nastaliq Urdu font
+
+### Implementation Files
+- `backend/routers/application.py` — API endpoint
+- `backend/services/complaint_qwen.py` — Qwen letter generation
+- `backend/data/departments.json` — Officer titles added to all 46 departments
+- `backend/data/NotoNastaliqUrdu.ttf` — Urdu font (690 KB)
+- `generate_application_pdf.py` — PDF generation script (xhtml2pdf)
+
+### PDF Generation
+**Library:** xhtml2pdf (chosen over ReportLab and WeasyPrint)
+
+**Why xhtml2pdf?**
+- ReportLab: Poor Urdu RTL rendering even with arabic-reshaper + python-bidi
+- WeasyPrint: Requires GTK system libraries (not available on Windows)
+- xhtml2pdf: Pure Python, handles HTML/CSS with RTL support via `dir="rtl"`
+
+**Test Results:**
+- English PDF: 3,469 bytes ✅
+- Urdu PDF: 3,146 bytes ✅
+
+### Next Steps for Frontend (Person B)
+1. Build smart form after classification (mandatory: name, address, phone, description)
+2. Add English/Urdu language toggle
+3. Form validation before API call
+4. Call `/generate-application` with form data
+5. Display letter preview
+6. Download PDF button
+
+### Commits
+- `8d9b66e` — Add formal application letter generation system
+- `60511c3` — Add Noto Nastaliq Urdu font + PDF generator
+- `7bc4951` — Add arabic-reshaper + python-bidi (later removed)
+- Latest — Switch to xhtml2pdf for proper RTL support
+
+---
+
 ## Project Summary
 
 SunoGov is an AI-powered civic complaint navigator for Pakistan. Users describe a civic issue (text, voice, or image) and get: the correct government department, all submission channels, and a bilingual complaint — in under one minute. Built with Qwen AI + FastAPI + Next.js.

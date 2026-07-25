@@ -1,125 +1,148 @@
 """
-Generate formal application PDFs (English + Urdu) using real API data.
-Uses locally downloaded Noto Nastaliq Urdu font for proper Urdu rendering.
+Generate formal application PDFs using xhtml2pdf.
+Proper RTL support for Urdu text with Noto Nastaliq Urdu font.
 """
 import requests
 import json
-import sys
 from pathlib import Path
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import mm
-from reportlab.platypus import SimpleDocTemplate, Paragraph
-from reportlab.lib import colors
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.lib.enums import TA_LEFT, TA_RIGHT
-import arabic_reshaper
-from bidi.algorithm import get_display
+from xhtml2pdf import pisa
 
-# Force UTF-8 output
-sys.stdout.reconfigure(encoding='utf-8')
-
-# Register Urdu font from local file
 FONT_PATH = Path(__file__).parent / "backend" / "data" / "NotoNastaliqUrdu.ttf"
-try:
-    pdfmetrics.registerFont(TTFont('NotoNastaliq', str(FONT_PATH)))
-    URDU_FONT = 'NotoNastaliq'
-    print(f"[OK] Urdu font loaded from {FONT_PATH.name}")
-except Exception as e:
-    print(f"[ERROR] Failed to load font: {e}")
-    URDU_FONT = 'Helvetica'
+
+ENGLISH_HTML_TEMPLATE = """
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family: Times New Roman; font-size: 11pt; line-height: 1.6; color: #111827;">
+    <div style="margin: 2.5cm;">
+        {letter_content}
+    </div>
+</body>
+</html>
+"""
+
+URDU_HTML_TEMPLATE = """
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family: 'Noto Nastaliq Urdu', serif; font-size: 13pt; line-height: 2.0; color: #111827; direction: rtl; text-align: right;">
+    <div style="margin: 2.5cm;">
+        {letter_content}
+    </div>
+</body>
+</html>
+"""
 
 
 def generate_pdf(letter_text, language, filename):
-    doc = SimpleDocTemplate(
-        filename, pagesize=A4,
-        rightMargin=25*mm, leftMargin=25*mm,
-        topMargin=25*mm, bottomMargin=25*mm
-    )
-    styles = getSampleStyleSheet()
-
-    if language == "urdu":
-        # Reshape Urdu text for proper RTL rendering
-        lines = letter_text.split('\n')
-        reshaped_lines = []
-        for line in lines:
-            if line.strip():  # Non-empty line
-                reshaped = arabic_reshaper.reshape(line)
-                bidi_text = get_display(reshaped)
-                reshaped_lines.append(bidi_text)
-            else:
-                reshaped_lines.append('')
-        formatted = '<br/>'.join(reshaped_lines)
-        
-        style = ParagraphStyle(
-            'UrduLetter', parent=styles['Normal'],
-            fontSize=13, fontName=URDU_FONT,
-            textColor=colors.HexColor('#111827'),
-            leading=24, alignment=TA_RIGHT, spaceAfter=4*mm
-        )
+    """Generate PDF from letter text using xhtml2pdf."""
+    
+    # Convert newlines to proper HTML line breaks
+    letter_content = letter_text.replace('\n', '<br/>')
+    
+    # Select template based on language
+    if language == 'urdu':
+        html_content = URDU_HTML_TEMPLATE.format(letter_content=letter_content)
     else:
-        formatted = letter_text.replace('\n', '<br/>')
-        style = ParagraphStyle(
-            'EnglishLetter', parent=styles['Normal'],
-            fontSize=11, textColor=colors.HexColor('#111827'),
-            leading=16, alignment=TA_LEFT, spaceAfter=4*mm,
-            fontName='Times-Roman'
-        )
-
-    doc.build([Paragraph(formatted, style)])
+        html_content = ENGLISH_HTML_TEMPLATE.format(letter_content=letter_content)
+    
+    # Generate PDF using xhtml2pdf
+    with open(filename, 'wb') as output_file:
+        pisa_status = pisa.CreatePDF(html_content, dest=output_file)
+    
+    if pisa_status.err:
+        print(f"[ERROR] PDF generation failed for {filename}")
+        return False
+    
     size = Path(filename).stat().st_size
     print(f"[OK] {filename} ({size:,} bytes)")
+    return True
 
 
 def main():
-    base = "http://localhost:8000"
+    """Test PDF generation with sample data."""
+    API_URL = "http://localhost:8000"
     
-    # Step 1: Classify
-    print("Step 1: Classifying issue...")
-    r = requests.post(f"{base}/classify", json={
-        "text": "Teen din se hamari gali mein gutter ka pani khara hai, Johar Town Lahore",
-        "city_hint": "Lahore"
-    }, timeout=60)
-    if r.status_code != 200:
-        print(f"[ERROR] Classification failed: {r.status_code}")
-        return
-    cls = r.json()
-    print(f"[OK] {cls['issue_display']} in {cls['city']} -> {cls['department']['name']}")
-
-    payload = {
-        "issue_id": cls["issue_id"],
-        "city": cls["city"],
+    # Test data for Urdu
+    test_payload_urdu = {
+        "issue_id": "sewer_blockage",
+        "city": "Lahore",
+        "user_name": "محمد احمد خان",
+        "user_address": "مکان نمبر 45، گلی نمبر 12، جوہر ٹاؤن، لاہور",
+        "user_phone": "+92-300-1234567",
+        "user_description": "تین دن سے ہماری گلی میں گٹر کا پانی کھڑا ہے",
+        "language": "urdu",
+        "cnic": "35202-1234567-8",
+        "landmark": "الفلاح پارک کے قریب",
+        "previous_complaint_id": "",
+        "supporting_info": "یہ مسئلہ ایک ہفتے سے زیادہ عرصے سے جاری ہے"
+    }
+    
+    # Test data for English
+    test_payload_english = {
+        "issue_id": "sewer_blockage",
+        "city": "Lahore",
         "user_name": "Muhammad Ahmed Khan",
         "user_address": "House 45, Street 12, Johar Town, Lahore",
         "user_phone": "+92-300-1234567",
-        "user_description": "Teen din se hamari gali mein gutter ka pani khara hai, Johar Town Lahore",
+        "user_description": "There has been standing sewer water in our street for three days",
+        "language": "english",
         "cnic": "35202-1234567-8",
         "landmark": "Near Al-Falah Park",
-        "supporting_info": "This issue has been ongoing for over a week and is causing significant health hazards to residents."
+        "previous_complaint_id": "",
+        "supporting_info": "This issue has been ongoing for over a week"
     }
-
-    # Step 2: English letter
-    print("\nStep 2: Generating English application...")
-    payload["language"] = "english"
-    r = requests.post(f"{base}/generate-application", json=payload, timeout=120)
-    if r.status_code == 200:
-        data = r.json()
-        generate_pdf(data["letter"], "english", "application_english.pdf")
-    else:
-        print(f"[ERROR] English: {r.status_code} - {r.text[:200]}")
-
-    # Step 3: Urdu letter
-    print("\nStep 3: Generating Urdu application...")
-    payload["language"] = "urdu"
-    r = requests.post(f"{base}/generate-application", json=payload, timeout=120)
-    if r.status_code == 200:
-        data = r.json()
-        generate_pdf(data["letter"], "urdu", "application_urdu.pdf")
-    else:
-        print(f"[ERROR] Urdu: {r.status_code} - {r.text[:200]}")
-
-    print("\n[DONE]")
+    
+    print("Testing Urdu application generation...")
+    try:
+        response = requests.post(
+            f"{API_URL}/generate-application",
+            json=test_payload_urdu,
+            timeout=120
+        )
+        response.raise_for_status()
+        data = response.json()
+        letter_text = data.get('letter', '')
+        
+        if not letter_text:
+            print("[ERROR] No letter in response")
+            return
+        
+        print(f"[OK] Generated Urdu letter ({len(letter_text)} chars)")
+        print("\nGenerating Urdu PDF...")
+        generate_pdf(letter_text, 'urdu', 'application_urdu.pdf')
+        
+    except Exception as e:
+        print(f"[ERROR] Urdu generation failed: {e}")
+    
+    print("\n" + "="*60)
+    print("Testing English application generation...")
+    try:
+        response = requests.post(
+            f"{API_URL}/generate-application",
+            json=test_payload_english,
+            timeout=120
+        )
+        response.raise_for_status()
+        data = response.json()
+        letter_text = data.get('letter', '')
+        
+        if not letter_text:
+            print("[ERROR] No letter in response")
+            return
+        
+        print(f"[OK] Generated English letter ({len(letter_text)} chars)")
+        print("\nGenerating English PDF...")
+        generate_pdf(letter_text, 'english', 'application_english.pdf')
+        
+    except Exception as e:
+        print(f"[ERROR] English generation failed: {e}")
+    
+    print("\n[DONE] PDF generation complete")
 
 
 if __name__ == "__main__":
