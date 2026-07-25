@@ -115,6 +115,14 @@ SunoGov is an AI-powered civic complaint navigator for Pakistan. Users describe 
 - ✅ Image format auto-detection: jpeg, png, webp, gif (from base64 header)
 - ✅ Render deployment config: `render.yaml` with rootDir, health check, env vars
 - ✅ Logging: INFO-level logging for all API errors and parse failures
+- ✅ `city_hint` priority fix: user-provided city is never overridden by multi-city fallback
+- ✅ Selfie rejection test: non-civic image (HEIF selfie 3000x4000) returns 422 with clear error
+- ✅ Server-side image normalization: always convert to JPEG ≤ 2048px (handles HEIF, AVIF, oversize, RGBA)
+- ✅ Added `pillow>=10.0.0` dependency for server-side image conversion
+- ✅ Verified city override behavior:
+  - Selfie (HEIF) + Lahore → **422 rejected** (not a civic issue) — raw Qwen: `{"issue_id": null, "city": null, "confidence": 1.0}`
+  - Road + Karachi → **404 "not found"** (potholes not in Karachi KB, no fallback to Lahore)
+  - Road + Lahore → **200 OK** `potholes → LDA Lahore` (confidence 0.95)
 
 ### Frontend (Person B)
 - _Nothing yet — Person B's responsibility_

@@ -37,9 +37,11 @@ async def classify(req: ClassifyRequest):
         raise HTTPException(status_code=500, detail="AI classification failed. Please try again.")
 
     issue_id = extraction.get("issue_id", "")
-    city = extraction.get("city") or req.city_hint or ""
+    qwen_city = extraction.get("city")
+    city = qwen_city or req.city_hint or ""
     language = extraction.get("language", "english")
     confidence = extraction.get("confidence", 0.0)
+    user_provided_city = bool(req.city_hint)
 
     if not issue_id or issue_id is None:
         if req.image_base64:
@@ -59,7 +61,7 @@ async def classify(req: ClassifyRequest):
     if not issue and confidence < 0.7:
         issue = resolve_with_alias(city, issue_id)
 
-    if not issue:
+    if not issue and not user_provided_city:
         for other_city in cities:
             if other_city.lower() != city.lower():
                 issue = resolve(other_city, issue_id)
@@ -67,7 +69,7 @@ async def classify(req: ClassifyRequest):
                     city = other_city
                     break
 
-    if not issue:
+    if not issue and not user_provided_city:
         for other_city in cities:
             issue = resolve_with_alias(other_city, issue_id)
             if issue:
@@ -77,7 +79,7 @@ async def classify(req: ClassifyRequest):
     if not issue:
         raise HTTPException(
             status_code=404,
-            detail=f"Issue '{issue_id}' not found in any city. The AI may have misclassified.",
+            detail=f"Issue '{issue_id}' not found for city '{city}'. Please verify the city or describe the issue differently.",
         )
 
     dept_data = get_department(issue["department_id"])

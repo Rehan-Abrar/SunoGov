@@ -2,8 +2,11 @@ import json
 import os
 import re
 import logging
+import base64
+from io import BytesIO
 
 from openai import OpenAI, APIError, APITimeoutError, APIConnectionError
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 
@@ -116,6 +119,28 @@ def classify_text(
     return result
 
 
+def _to_jpeg_base64(image_base64: str, max_dim: int = 2048) -> str:
+    """Convert any image format to JPEG base64 and resize to fit within max_dim."""
+    try:
+        raw = base64.b64decode(image_base64)
+        img = Image.open(BytesIO(raw))
+        if img.mode in ("RGBA", "LA", "P"):
+            img = img.convert("RGB")
+        # Resize if exceeds Qwen's 2048x2048 limit
+        w, h = img.size
+        if w > max_dim or h > max_dim:
+            ratio = min(max_dim / w, max_dim / h)
+            new_size = (int(w * ratio), int(h * ratio))
+            img = img.resize(new_size, Image.LANCZOS)
+            logger.info(f"Resized image from {w}x{h} to {new_size[0]}x{new_size[1]}")
+        buf = BytesIO()
+        img.save(buf, format="JPEG", quality=85)
+        return base64.b64encode(buf.getvalue()).decode("utf-8")
+    except Exception as e:
+        logger.warning(f"Failed to convert image to JPEG: {e}")
+        return image_base64
+
+
 def classify_image(
     image_base64: str,
     text: str,
@@ -125,25 +150,12 @@ def classify_image(
     client = _get_client()
     system_prompt = _build_classification_prompt(issue_ids, cities)
 
-    # Detect image format from base64 header
-    if image_base64.startswith('/9j/'):
-        mime_type = 'image/jpeg'
-    elif image_base64.startswith('iVBORw0KGgo'):
-        mime_type = 'image/png'
-    elif image_base64.startswith('UklGR'):
-        mime_type = 'image/webp'
-    elif image_base64.startswith('R0lGOD'):
-        mime_type = 'image/gif'
-    else:
-        mime_type = 'image/jpeg'  # default fallback
+    # Always normalize to JPEG ≤ 2048px — handles HEIF, AVIF, oversized, RGBA, etc.
+    jpeg_b64 = _to_jpeg_base64(image_base64)
 
-    data_url = f"data:{mime_type};base64,{image_base64}"
-
+    data_url = f"data:image/jpeg;base64,{jpeg_b64}"
     user_content = [
-        {
-            "type": "image_url",
-            "image_url": {"url": data_url},
-        },
+        {"type": "image_url", "image_url": {"url": data_url}},
     ]
     if text:
         user_content.insert(0, {"type": "text", "text": text})
