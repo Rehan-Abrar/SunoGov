@@ -49,17 +49,22 @@ def _build_classification_prompt(issue_ids: list[str], cities: list[str]) -> str
     cities_str = ", ".join(cities)
     return (
         "You are a civic complaint classifier for Pakistan.\n\n"
-        "Given a user complaint (text or image description), return ONLY this JSON:\n"
+        "Given a user complaint (text or image), return ONLY this JSON:\n"
         "{\n"
-        '  "issue_id": "<one of the valid issue IDs>",\n'
-        '  "city": "<Pakistani city name>",\n'
+        '  "issue_id": "<one of the valid issue IDs or null if not a civic issue>",\n'
+        '  "city": "<Pakistani city name or null if not determinable>",\n'
         '  "language": "urdu" | "english" | "roman_urdu",\n'
         '  "confidence": <0.0 to 1.0>\n'
         "}\n\n"
         f"Valid issue_ids: [{ids_str}]\n"
         f"Valid cities: [{cities_str}]\n\n"
-        "If city is not mentioned or not determinable, return \"city\": null.\n"
-        "If the input is an image, describe the civic issue shown.\n"
+        "IMPORTANT RULES:\n"
+        "1. If city is not mentioned or not determinable, return \"city\": null.\n"
+        "2. If the input (especially images) does NOT clearly show a civic issue "
+        "(e.g., selfie, pet, random object, meme, landscape, non-civic content), "
+        "return \"issue_id\": null.\n"
+        "3. Only classify into one of the valid issue_ids listed above.\n"
+        "4. For images, analyze the visual content to identify the civic issue.\n"
         "Return ONLY valid JSON. No explanation, no markdown."
     )
 
@@ -98,7 +103,7 @@ def classify_text(
         logger.error(f"Failed to parse Qwen response: {content[:500]}")
         raise ValueError(f"Could not parse classification response")
 
-    result.setdefault("issue_id", "")
+    result.setdefault("issue_id", None)
     result.setdefault("city", None)
     result.setdefault("language", "english")
     result.setdefault("confidence", 0.0)
@@ -120,7 +125,19 @@ def classify_image(
     client = _get_client()
     system_prompt = _build_classification_prompt(issue_ids, cities)
 
-    data_url = f"data:image/jpeg;base64,{image_base64}"
+    # Detect image format from base64 header
+    if image_base64.startswith('/9j/'):
+        mime_type = 'image/jpeg'
+    elif image_base64.startswith('iVBORw0KGgo'):
+        mime_type = 'image/png'
+    elif image_base64.startswith('UklGR'):
+        mime_type = 'image/webp'
+    elif image_base64.startswith('R0lGOD'):
+        mime_type = 'image/gif'
+    else:
+        mime_type = 'image/jpeg'  # default fallback
+
+    data_url = f"data:{mime_type};base64,{image_base64}"
 
     user_content = [
         {
@@ -141,6 +158,7 @@ def classify_image(
             timeout=45,
         )
         content = response.choices[0].message.content or ""
+        logger.info(f"Raw Qwen vision response: {content}")
     except APITimeoutError:
         logger.error("Qwen Vision API timeout")
         raise
@@ -156,7 +174,7 @@ def classify_image(
         logger.error(f"Failed to parse Qwen vision response: {content[:500]}")
         raise ValueError("Could not parse image classification response")
 
-    result.setdefault("issue_id", "")
+    result.setdefault("issue_id", None)
     result.setdefault("city", None)
     result.setdefault("language", "english")
     result.setdefault("confidence", 0.0)

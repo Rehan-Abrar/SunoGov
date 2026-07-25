@@ -41,6 +41,13 @@ async def classify(req: ClassifyRequest):
     language = extraction.get("language", "english")
     confidence = extraction.get("confidence", 0.0)
 
+    if not issue_id or issue_id is None:
+        if req.image_base64:
+            detail = "This image does not appear to show a civic issue. Please upload a photo of a civic problem (e.g., pothole, broken road, garbage, water issue, etc.)."
+        else:
+            detail = "Could not identify a civic issue from your description. Please describe a specific civic problem (e.g., broken road, water supply, garbage collection, etc.)."
+        raise HTTPException(status_code=422, detail=detail)
+
     if not city:
         raise HTTPException(
             status_code=422,

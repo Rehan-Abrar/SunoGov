@@ -80,7 +80,7 @@ SunoGov is an AI-powered civic complaint navigator for Pakistan. Users describe 
 | Phase 2 — Frontend Core (Person B) | ⬜ Not started | Person B's responsibility |
 | Phase 3 — Qwen Integration (Person A) | ✅ Done | Real Qwen calls working, text + vision, JSON parsing |
 | Phase 3 — Voice + Connect API (Person B) | ⬜ Not started | Person B's responsibility |
-| Phase 4 — Image + Deploy (Person A) | ⬜ Not started | Vision code ready, just need to deploy |
+| Phase 4 — Image + Deploy (Person A) | 🔄 In progress | Vision wired + tested, Render config ready, deployment pending |
 | Phase 4 — Image + PDF + Polish (Person B) | ⬜ Not started | |
 | Phase 5 — Deploy + Demo | ⬜ Not started | Both together |
 
@@ -108,6 +108,12 @@ SunoGov is an AI-powered civic complaint navigator for Pakistan. Users describe 
 - ✅ Complaint template generation (Urdu + English) — kept as templates (Qwen rewrite is optional/cut-list)
 - ✅ Dynamic classification prompt: injects all valid issue_ids and cities from KB into system prompt
 - ✅ Confidence clamping: ensures 0.0–1.0 range
+- ✅ Vision pipeline tested end-to-end: road image → `potholes` → LDA Lahore (confidence 0.95)
+- ✅ Raw Qwen vision response captured: `{"issue_id": "potholes", "city": null, "language": "english", "confidence": 0.95}`
+- ✅ Non-civic image rejection: Qwen returns `issue_id: null` for irrelevant images/text
+- ✅ Context-aware error messages: different for image vs text non-civic input
+- ✅ Image format auto-detection: jpeg, png, webp, gif (from base64 header)
+- ✅ Render deployment config: `render.yaml` with rootDir, health check, env vars
 - ✅ Logging: INFO-level logging for all API errors and parse failures
 
 ### Frontend (Person B)

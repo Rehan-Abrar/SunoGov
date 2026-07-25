@@ -111,14 +111,17 @@
 
 **Goal:** Image input wired, backend deployed.
 
-- [ ] Wire `classify_with_qwen_vision` into the `/classify` endpoint for `image_base64` input
-- [ ] Test image input: upload garbage pile photo → correct classification
-- [ ] Deploy backend to Railway or Render
-- [ ] Set `QWEN_API_KEY` env var on Railway/Render
+- [x] Wire `classify_with_qwen_vision` into the `/classify` endpoint for `image_base64` input
+- [x] Test image input: upload road photo → correct classification (potholes → LDA)
+- [x] Non-civic image rejection: returns clear error for irrelevant images
+- [x] Image format detection: jpeg, png, webp, gif
+- [x] Render deployment config (`render.yaml`) ready
+- [ ] Deploy backend to Render *(manual step — requires Render dashboard setup)*
+- [ ] Set `MODELSCOPE_API_KEY` env var on Render *(manual step)*
 - [ ] Test live backend URL with Postman
 - [ ] Share live backend URL with B
 
-**Exit Criteria:** Backend live on Railway/Render. Image input works.
+**Exit Criteria:** Backend live on Render. Image input works. *(Deployment pending manual Render setup)*
 
 ---
 
