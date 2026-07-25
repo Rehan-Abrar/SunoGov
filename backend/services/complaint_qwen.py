@@ -1,6 +1,6 @@
 """
 Qwen-powered formal complaint letter generator.
-Generates submission-ready formal applications in English or Urdu.
+Generates submission-ready formal applications in English.
 """
 import os
 from openai import OpenAI
@@ -22,7 +22,7 @@ def generate_formal_letter(
 ) -> dict:
     """
     Generate a formal complaint letter using Qwen.
-    
+
     Args:
         issue_display: The issue type (e.g., "Sewer Blockage")
         city: City name
@@ -33,9 +33,9 @@ def generate_formal_letter(
         user_address: Complainant's complete address
         user_phone: Complainant's phone number
         user_description: Original user complaint text
-        language: "english" or "urdu"
+        language: "english" only (Urdu support removed)
         additional_context: Optional dict with CNIC, landmark, previous_complaint_id, etc.
-    
+
     Returns:
         dict with 'letter' (formatted text) and 'metadata' (for debugging)
     """
@@ -43,9 +43,9 @@ def generate_formal_letter(
         api_key=os.getenv("MODELSCOPE_API_KEY"),
         base_url=os.getenv("QWEN_BASE_URL", "https://api-inference.modelscope.ai/v1")
     )
-    
+
     model_name = os.getenv("QWEN_MODEL_NAME", "Qwen-Ambassador/Qwen3.7-Plus")
-    
+
     # Build context from additional info
     context_parts = []
     if additional_context:
@@ -57,22 +57,15 @@ def generate_formal_letter(
             context_parts.append(f"Previous Complaint ID: {additional_context['previous_complaint_id']}")
         if additional_context.get('supporting_info'):
             context_parts.append(f"Additional Information: {additional_context['supporting_info']}")
-    
+
     context_str = "\n".join(context_parts) if context_parts else ""
-    
-    if language == "english":
-        prompt = _build_english_prompt(
-            issue_display, city, department_name, officer_title,
-            office_address, user_name, user_address, user_phone,
-            user_description, context_str
-        )
-    else:
-        prompt = _build_urdu_prompt(
-            issue_display, city, department_name, officer_title,
-            office_address, user_name, user_address, user_phone,
-            user_description, context_str
-        )
-    
+
+    prompt = _build_english_prompt(
+        issue_display, city, department_name, officer_title,
+        office_address, user_name, user_address, user_phone,
+        user_description, context_str
+    )
+
     response = client.chat.completions.create(
         model=model_name,
         messages=[
@@ -82,13 +75,13 @@ def generate_formal_letter(
         temperature=0.7,
         max_tokens=1000
     )
-    
+
     letter_text = response.choices[0].message.content.strip()
-    
+
     return {
         "letter": letter_text,
         "metadata": {
-            "language": language,
+            "language": "english",
             "issue": issue_display,
             "city": city,
             "department": department_name,
@@ -152,88 +145,3 @@ INSTRUCTIONS:
 Write ONLY the letter text, nothing else. Make it ready to print and submit to the government office."""
 
     return prompt
-
-
-def _build_urdu_prompt(
-    issue_display, city, department_name, officer_title,
-    office_address, user_name, user_address, user_phone,
-    user_description, context_str
-):
-    today = datetime.now().strftime("%d %B %Y")
-    
-    # Translate officer title to Urdu
-    urdu_officer_title = _translate_officer_title_to_urdu(officer_title)
-    
-    prompt = f"""پاکستان کے ایک سرکاری محکمے کو رسمی شکایتی خط لکھیں۔
-
-وصول کنندہ:
-{urdu_officer_title}
-{office_address}
-
-بھیجنے والا:
-{user_name}
-{user_address}
-فون: {user_phone}
-
-مسئلے کی تفصیلات:
-- مسئلے کی قسم: {issue_display}
-- شہر: {city}
-- محکمہ: {department_name}
-
-صارف کی اصل شکایت:
-{user_description}
-
-{f'اضافی معلومات:\n{context_str}\n' if context_str else ''}
-
-ہدایات:
-1. رسمی سرکاری خط کی شکل استعمال کریں:
-   - بھیجنے والے کا پتہ (اوپر بائیں)
-   - تاریخ (آج: {today})
-   - وصول کنندہ کا پتہ (افسر کا عہدہ اور محکمے کا پتہ)
-   - عنوان: "عنوان: ... کے حوالے سے شکایت"
-   - سلام: "محترم جناب/مدام،"
-   - پیشہ ورانہ متن (3-4 پیراگراف)
-   - اختتام: "آپ کا/کی مخلص،"
-   - دستخط بلاک: نام، پتہ، فون
-
-2. خط ہونا چاہیے:
-   - جمع کرانے کے لیے تیار (کوئی خالی جگہ نہیں، کوئی "[آپ کا نام]" نہیں)
-   - پیشہ ورانہ اور باادب لہجہ
-   - صارف کی شکایت کی بنیاد پر مخصوص اور تفصیلی
-   - فوری کارروائی کی درخواست
-   - ہونے والی تکلیف کا ذکر
-
-3. شامل نہ کریں:
-   - درجہ بندی کی میٹا ڈیٹا (confidence، issue_id، وغیرہ)
-   - محکمے کی رابطہ معلومات (ہیلپ لائن، پورٹل، وغیرہ)
-   - مطلوبہ دستاویزات کی فہرست
-   - کوئی ہیڈر یا ٹائٹل جیسے "رسمی شکایت"
-
-صرف خط کا متن لکھیں، کچھ اور نہیں۔ اسے پرنٹ کر کے سرکاری دفتر میں جمع کرانے کے لیے تیار کریں۔
-
-اہم: خط مکمل طور پر اردو میں ہونا چاہیے (نستعلیق رسم الخط)، دائیں سے بائیں (RTL) فارمیٹنگ کے لیے موزوں۔"""
-
-    return prompt
-
-
-def _translate_officer_title_to_urdu(english_title: str) -> str:
-    """
-    Translate common officer titles to Urdu.
-    This is a simple mapping for common titles.
-    """
-    translations = {
-        "The Managing Director": "منیجنگ ڈائریکٹر",
-        "The Chief Executive Officer": "چیف ایگزیکٹو آفیسر",
-        "The Director General": "ڈائریکٹر جنرل",
-        "The Chairman": "چیئرمین",
-        "The Secretary": "سیکرٹری",
-        "The Administrator": "ایڈمنسٹریٹر",
-        "The Chief Officer": "چیف آفیسر",
-    }
-    
-    urdu_title = english_title
-    for eng, urdu in translations.items():
-        if eng in english_title:
-            urdu_title = urdu_title.replace(eng, urdu)
-    
-    return urdu_title

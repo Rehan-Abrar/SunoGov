@@ -38,7 +38,13 @@ Render free tier may timeout on very large base64 images (>80KB). Recommend clie
 **Status:** Complete and tested locally (2026-07-25)
 
 ### Overview
-Qwen-powered formal complaint letter generation in English and Urdu. Creates submission-ready formal applications for Pakistani government departments.
+Qwen-powered formal complaint letter generation in **English only**. Creates submission-ready formal applications for Pakistani government departments.
+
+**Decision: English Only**
+- Urdu PDF rendering proved problematic (RTL text display issues)
+- English is acceptable for Pakistani government submissions
+- Simplifies the system and reduces generation time
+- ReportLab library used for fast, clean PDF generation
 
 ### API Endpoint
 `POST /generate-application`
@@ -52,7 +58,6 @@ Qwen-powered formal complaint letter generation in English and Urdu. Creates sub
   "user_address": "House 45, Street 12, Johar Town, Lahore",
   "user_phone": "+92-300-1234567",
   "user_description": "There has been standing sewer water in our street for three days",
-  "language": "english",  // or "urdu"
   "cnic": "35202-1234567-8",  // optional
   "landmark": "Near Al-Falah Park",  // optional
   "previous_complaint_id": "",  // optional
@@ -77,43 +82,51 @@ Qwen-powered formal complaint letter generation in English and Urdu. Creates sub
 ### Features
 - **Formal letter format:** From address → Date → To address (with officer title) → Subject → Body → Closing → Signature
 - **Officer titles:** All 46 departments have proper titles (e.g., "The Managing Director, WASA Lahore")
-- **Bilingual:** English and Urdu support
+- **English only:** Simplified for reliability and speed
 - **Qwen-powered:** Professional letter generation using AI (not templates)
 - **Submission-ready:** No placeholders, no metadata in the letter
-- **Urdu RTL:** Proper right-to-left rendering with Noto Nastaliq Urdu font
+- **Fast PDF generation:** ReportLab creates clean PDFs in ~2-3 seconds
 
 ### Implementation Files
 - `backend/routers/application.py` — API endpoint
-- `backend/services/complaint_qwen.py` — Qwen letter generation
+- `backend/services/complaint_qwen.py` — Qwen letter generation (English only)
 - `backend/data/departments.json` — Officer titles added to all 46 departments
-- `backend/data/NotoNastaliqUrdu.ttf` — Urdu font (690 KB)
-- `generate_application_pdf.py` — PDF generation script (xhtml2pdf)
+- `generate_application_pdf.py` — PDF generation script (ReportLab)
 
 ### PDF Generation
-**Library:** xhtml2pdf (chosen over ReportLab and WeasyPrint)
+**Library:** ReportLab (chosen for speed and simplicity)
 
-**Why xhtml2pdf?**
-- ReportLab: Poor Urdu RTL rendering even with arabic-reshaper + python-bidi
-- WeasyPrint: Requires GTK system libraries (not available on Windows)
-- xhtml2pdf: Pure Python, handles HTML/CSS with RTL support via `dir="rtl"`
+**Why ReportLab?**
+- Fast PDF generation (~2-3 seconds)
+- Clean, professional output
+- No external dependencies (pure Python)
+- Perfect for English text formatting
 
 **Test Results:**
-- English PDF: 3,469 bytes ✅
-- Urdu PDF: 3,146 bytes ✅
+- Letter generation: ~45 seconds (Qwen API call)
+- PDF creation: ~2-3 seconds (ReportLab)
+- Total time: ~49 seconds
+- English PDF: 3,637 bytes ✅
+
+### Removed Features
+- Urdu PDF support (RTL rendering issues)
+- arabic-reshaper and python-bidi libraries
+- WeasyPrint (required GTK, not available on Windows)
+- xhtml2pdf (overkill for English-only)
 
 ### Next Steps for Frontend (Person B)
 1. Build smart form after classification (mandatory: name, address, phone, description)
-2. Add English/Urdu language toggle
-3. Form validation before API call
-4. Call `/generate-application` with form data
-5. Display letter preview
-6. Download PDF button
+2. Form validation before API call
+3. Call `/generate-application` with form data
+4. Display letter preview
+5. Download PDF button (fast generation ~2-3s)
 
 ### Commits
 - `8d9b66e` — Add formal application letter generation system
 - `60511c3` — Add Noto Nastaliq Urdu font + PDF generator
-- `7bc4951` — Add arabic-reshaper + python-bidi (later removed)
-- Latest — Switch to xhtml2pdf for proper RTL support
+- `7bc4951` — Add arabic-reshaper + python-bidi (for Urdu RTL)
+- `6dc5985` — Switch to xhtml2pdf for Urdu RTL (attempted fix)
+- Latest — Remove Urdu support, English-only with ReportLab (fast & reliable)
 
 ---
 
