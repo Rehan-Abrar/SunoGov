@@ -120,8 +120,10 @@
 - [x] Set `MODELSCOPE_API_KEY` env var on Render ✅
 - [x] Test live backend URL with curl/Postman ✅
 - [x] Share live backend URL with B: **https://sunogov.onrender.com**
+- [x] Formal application letter generation: `/generate-application` endpoint with Qwen-powered formal letters (English-only)
+- [x] PDF generation: ReportLab for fast, clean PDFs (~2-3s generation time)
 
-**Exit Criteria:** Backend live on Render. Image input works. ✅
+**Exit Criteria:** Backend live on Render. Image input works. Formal letter generation ready. ✅
 
 ---
 
