@@ -7,15 +7,16 @@
     "portal_url": "https://crm.punjab.gov.pk/CmccPublic/SignUpPage",
     "mobile_app": "Pakistan Citizen Portal (PCP)",
     "email": "Not officially available.",
-    "helpline": "15 (Punjab Safe Cities Authority helpline)",
+    "helpline": "1334 (WASA Lahore Central Complaint Cell)",
+    "emergency_helpline": "15 (Punjab Safe Cities Authority – for major flooding/dangerous manholes only)",
     "whatsapp": "Not officially available.",
     "office_address": "WASA Lahore Head Office, 7-KM, Multan Road, Lahore.",
     "maps_link": "Not officially available.",
-    "working_hours": "8:00 AM – 4:00 PM (Mon–Fri); 15 operates 24/7.",
+    "working_hours": "8:00 AM – 4:00 PM (Mon–Fri); 1334 operates 24/7 for emergencies.",
     "source": "WASA Lahore, Punjab Safe Cities Authority",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-03-04"
+    "last_updated": "2026-07-25"
   },
   "lwmc": {
     "department_name": "Lahore Waste Management Company (LWMC)",
