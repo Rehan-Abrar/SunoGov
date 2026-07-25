@@ -151,3 +151,4 @@ sunogov/
 - Read this file to understand current state before asking what to build next
 - The JSON knowledge base is the source of truth — never hardcode department info in code
 - Qwen classifies, backend routes — never the other way around
+- Qwen Code is installed at `C:\Users\rehan\AppData\Local\qwen-code\bin\qwen.cmd`; launch it with `qwen --model "Qwen-Ambassador/Qwen3.7-Max"` after refreshing the shell PATH
