@@ -39,3 +39,7 @@ frontend/out/
 *.onnx
 *.safetensors
 models/
+
+# Frontend
+node_modules/
+.next/
