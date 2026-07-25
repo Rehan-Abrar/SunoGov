@@ -1,7 +1,7 @@
 # Memory — SunoGov
 **Live Project State — Update this file as you build**
 
-Last Updated: Hackathon Day 1
+Last Updated: 2026-07-25
 
 ---
 
@@ -33,7 +33,7 @@ SunoGov is an AI-powered civic complaint navigator for Pakistan. Users describe 
 
 ## Knowledge Base Status
 
-- `departments.json` — ✅ Complete. Missing 3 to add: `epd_kpk`, `epd_balochistan`, `epd_gb`
+- `departments.json` — ✅ Complete (includes `epd_kpk`, `epd_balochistan`, `epd_gb`)
 - `issues.json` — ✅ Complete. 42 issues × 15 cities. Some smaller cities marked `Estimated`
 - `aliases.json` — ✅ Complete. English + Urdu + Roman Urdu
 
@@ -43,13 +43,14 @@ SunoGov is an AI-powered civic complaint navigator for Pakistan. Users describe 
 
 | Phase | Status | Notes |
 |-------|--------|-------|
-| Phase 1 — Setup | ⬜ Not started | |
-| Phase 2 — Backend Core | ⬜ Not started | |
-| Phase 3 — Qwen Integration | ⬜ Not started | |
-| Phase 4 — Frontend Core | ⬜ Not started | |
-| Phase 5 — Voice + Image | ⬜ Not started | |
-| Phase 6 — Polish + PDF | ⬜ Not started | |
-| Phase 7 — Deploy + Demo | ⬜ Not started | |
+| Phase 1 — Setup | ✅ Done | Repo, envs, JSON files, deps all in place |
+| Phase 2 — Backend Core (Person A) | ✅ Done | `/classify` working with stub, full response shape correct |
+| Phase 2 — Frontend Core (Person B) | ⬜ Not started | Person B's responsibility |
+| Phase 3 — Qwen Integration (Person A) | ⬜ Not started | Replace stub with real Qwen calls |
+| Phase 3 — Voice + Connect API (Person B) | ⬜ Not started | Person B's responsibility |
+| Phase 4 — Image + Deploy (Person A) | ⬜ Not started | |
+| Phase 4 — Image + PDF + Polish (Person B) | ⬜ Not started | |
+| Phase 5 — Deploy + Demo | ⬜ Not started | Both together |
 
 **Update statuses to:** ⬜ Not started | 🔄 In progress | ✅ Done | ❌ Blocked
 
@@ -57,29 +58,52 @@ SunoGov is an AI-powered civic complaint navigator for Pakistan. Users describe 
 
 ## Completed Features
 
-_None yet — update as you build._
+### Backend (Person A)
+- ✅ FastAPI project initialized with proper structure
+- ✅ All 3 JSON data files loaded at startup into module-level dicts
+- ✅ `lookup[(city, issue_id)]` index built at startup in `kb.py`
+- ✅ Pydantic request model: `ClassifyRequest { text, image_base64, city_hint }`
+- ✅ Pydantic response model: `ClassifyResponse` matching Architecture.md exactly
+- ✅ Qwen stubbed: returns hardcoded `sewer_leakage` / `Lahore`
+- ✅ Department join: `issue["department_id"]` → `departments[dept_id]` working
+- ✅ Alias fallback function implemented in `kb.py`
+- ✅ CORS enabled for `localhost:3000`
+- ✅ `/classify` tested in curl — full response shape verified correct
+
+### Frontend (Person B)
+- _Nothing yet — Person B's responsibility_
 
 ---
 
 ## Current Status
 
-**Active Phase:** Phase 1 — Setup
-**Currently Working On:** —
-**Blockers:** —
+**Active Phase:** Phase 2 (Backend complete, waiting for Person B)
+**Currently Working On:** Ready to start Phase 3 — Qwen Integration
+**Blockers:** None (backend side)
 
 ---
 
 ## Pending Tasks
 
-- Add `epd_kpk`, `epd_balochistan`, `epd_gb` to `departments.json`
-- Initialize repos and environments
-- Begin FastAPI backend
+### Person A (Backend)
+- Phase 3: Replace Qwen stub with real `classify_with_qwen(text)` 
+- Phase 3: Add `classify_with_qwen_vision(image_base64)` for image input
+- Phase 3: Parse/validate Qwen JSON (strip markdown fences)
+- Phase 3: Error handling (invalid JSON, unknown issue_id, missing city, timeout)
+- Phase 3: Trigger alias fallback if confidence < 0.7 or invalid issue_id
+- Phase 4: Wire vision into `/classify` endpoint
+- Phase 4: Deploy backend to Railway/Render
+
+### Person B (Frontend)
+- Phase 2: All frontend components (InputPanel, ReasoningCard, SubmissionHub, ComplaintBox)
+- Phase 3: Voice input, connect to real API
+- Phase 4: Image upload, PDF export, mobile responsive
 
 ---
 
 ## Known Bugs
 
-_None yet._
+_None currently._
 
 ---
 
@@ -98,6 +122,8 @@ _None yet._
 sunogov/
   /backend
     main.py
+    .env.example
+    requirements.txt
     /data
       departments.json
       issues.json
@@ -105,26 +131,17 @@ sunogov/
     /routers
       classify.py
     /services
-      qwen.py
-      kb.py
-      complaint.py
-    requirements.txt
-    .env
+      models.py        ← Pydantic request/response models
+      qwen.py          ← Qwen integration (stubbed for Phase 2)
+      kb.py            ← Knowledge base loader + lookup index
+      complaint.py     ← Bilingual complaint template generator
   /frontend
-    /app
-      page.tsx
-      /components
-        InputPanel.tsx
-        ReasoningCard.tsx
-        SubmissionHub.tsx
-        ComplaintBox.tsx
-        PDFExport.tsx
-      /lib
-        api.ts
-        speech.ts
-    tailwind.config.ts
-    .env.local
-  README.md
+    (Person B's domain)
+  /docs
+    Architecture.md
+    Design.md
+    Memory.md
+    Phases.md
 ```
 
 ---
@@ -147,8 +164,9 @@ sunogov/
 
 ## Notes for Next AI Session
 
-- Read PRD.md, Architecture.md, Rules.md before generating any code
+- Read Architecture.md, Phases.md before generating any code
 - Read this file to understand current state before asking what to build next
 - The JSON knowledge base is the source of truth — never hardcode department info in code
 - Qwen classifies, backend routes — never the other way around
-- Qwen Code is installed at `C:\Users\rehan\AppData\Local\qwen-code\bin\qwen.cmd`; launch it with `qwen --model "Qwen-Ambassador/Qwen3.7-Max"` after refreshing the shell PATH
+- Run backend with: `cd backend && ..\\..\\.venv\\Scripts\\python.exe -m uvicorn main:app --host 0.0.0.0 --port 8000`
+- Person A = backend only. Person B = frontend only. Don't cross boundaries.

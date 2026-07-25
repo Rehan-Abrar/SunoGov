@@ -5,10 +5,11 @@ _departments: dict = {}
 _issues: dict = {}
 _aliases: dict = {}
 _lookup: dict = {}
+_alias_index: dict = {}
 
 
 def load_knowledge_base(data_dir: Path) -> None:
-    global _departments, _issues, _aliases, _lookup
+    global _departments, _issues, _aliases, _lookup, _alias_index
 
     with open(data_dir / "departments.json", encoding="utf-8") as f:
         _departments = json.load(f)
@@ -20,25 +21,42 @@ def load_knowledge_base(data_dir: Path) -> None:
         _aliases = json.load(f)
 
     _lookup = {}
-    for entry in _departments.get("entries", []):
-        for city in entry.get("cities", []):
-            for issue_id in entry.get("issue_ids", []):
-                _lookup[(city.lower(), issue_id.lower())] = entry
+    for city, issues_list in _issues.items():
+        for issue in issues_list:
+            _lookup[(city.lower(), issue["issue_id"].lower())] = issue
+
+    _alias_index = {}
+    for issue_id, synonyms in _aliases.items():
+        for synonym in synonyms:
+            _alias_index[synonym.lower()] = issue_id
 
 
-def resolve_department(city: str, issue_id: str) -> dict:
+def resolve(city: str, issue_id: str) -> dict | None:
     key = (city.lower(), issue_id.lower())
     if key in _lookup:
         return _lookup[key]
+    return None
 
-    alias_id = _aliases.get(issue_id.lower())
-    if alias_id:
-        key = (city.lower(), alias_id.lower())
-        if key in _lookup:
-            return _lookup[key]
 
-    return {
-        "name": "Unknown Department",
-        "reason": "Could not determine the responsible department.",
-        "channels": [],
-    }
+def resolve_with_alias(city: str, issue_id: str) -> dict | None:
+    result = resolve(city, issue_id)
+    if result:
+        return result
+
+    mapped_id = _alias_index.get(issue_id.lower())
+    if mapped_id:
+        return resolve(city, mapped_id)
+
+    return None
+
+
+def get_department(department_id: str) -> dict | None:
+    return _departments.get(department_id)
+
+
+def get_all_issue_ids() -> list[str]:
+    return list(_aliases.keys())
+
+
+def get_all_cities() -> list[str]:
+    return list(_issues.keys())

@@ -18,16 +18,16 @@
 
 **Goal:** Repo, environments, and data files in place. Do this together so you're on the same page.
 
-- [ ] **Both:** Create GitHub repo (`sunogov`), set up folder structure
-- [ ] **A:** Initialize FastAPI project (`/backend`), install deps: `fastapi uvicorn python-dotenv httpx pydantic`
-- [ ] **A:** Add `departments.json`, `issues.json`, `aliases.json` to `/backend/data/`
-- [ ] **A:** Add the 3 missing departments to `departments.json`: `epd_kpk`, `epd_balochistan`, `epd_gb`
-- [ ] **A:** Create `.env` with `QWEN_API_KEY`, add to `.gitignore`
-- [ ] **B:** Initialize Next.js 14 app (`/frontend`), install deps: `tailwindcss framer-motion`
-- [ ] **B:** Create `.env.local` with `NEXT_PUBLIC_API_URL=http://localhost:8000`
-- [ ] **Both:** Agree on the final API response shape (see Architecture.md) — B will mock this
+- [x] **Both:** Create GitHub repo (`sunogov`), set up folder structure
+- [x] **A:** Initialize FastAPI project (`/backend`), install deps: `fastapi uvicorn python-dotenv httpx pydantic`
+- [x] **A:** Add `departments.json`, `issues.json`, `aliases.json` to `/backend/data/`
+- [x] **A:** Add the 3 missing departments to `departments.json`: `epd_kpk`, `epd_balochistan`, `epd_gb`
+- [x] **A:** Create `.env` with `QWEN_API_KEY`, add to `.gitignore`
+- [x] **B:** Initialize Next.js 14 app (`/frontend`), install deps: `tailwindcss framer-motion`
+- [x] **B:** Create `.env.local` with `NEXT_PUBLIC_API_URL=http://localhost:8000`
+- [x] **Both:** Agree on the final API response shape (see Architecture.md) — B will mock this
 
-**Exit Criteria:** Both servers run locally. Both have read Architecture.md.
+**Exit Criteria:** Both servers run locally. Both have read Architecture.md. ✅
 
 ---
 
@@ -37,17 +37,17 @@
 
 **Goal:** `/classify` endpoint working with real KB lookup (Qwen stubbed for now).
 
-- [ ] Load all 3 JSON files at startup into module-level dicts
-- [ ] Build `lookup[(city, issue_id)]` index at startup (`kb.py`)
-- [ ] Write Pydantic request model: `{ text, image_base64, city_hint }`
-- [ ] Write Pydantic response model (full structure per Architecture.md)
-- [ ] Stub Qwen: hardcode `issue_id="sewer_leakage"`, `city="Lahore"` for now
-- [ ] Implement department join: `issue["department_id"]` → `departments[dept_id]`
-- [ ] Implement alias fallback function (even if not wired to Qwen yet)
-- [ ] Enable CORS for `localhost:3000`
-- [ ] Test in Postman: verify full response shape matches what B expects
+- [x] Load all 3 JSON files at startup into module-level dicts
+- [x] Build `lookup[(city, issue_id)]` index at startup (`kb.py`)
+- [x] Write Pydantic request model: `{ text, image_base64, city_hint }`
+- [x] Write Pydantic response model (full structure per Architecture.md)
+- [x] Stub Qwen: hardcode `issue_id="sewer_leakage"`, `city="Lahore"` for now
+- [x] Implement department join: `issue["department_id"]` → `departments[dept_id]`
+- [x] Implement alias fallback function (even if not wired to Qwen yet)
+- [x] Enable CORS for `localhost:3000`
+- [x] Test in Postman: verify full response shape matches what B expects
 
-**Exit Criteria:** `/classify` returns correct full response for stubbed input.
+**Exit Criteria:** `/classify` returns correct full response for stubbed input. ✅
 
 ---
 
