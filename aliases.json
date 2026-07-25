@@ -1,0 +1,136 @@
+{
+  "sewer_leakage": [
+    "gutter leak", "gutter ka pani", "nala leak", "nala", "drain leak", "sewer leak",
+    "manhole seepage", "sewer ka paani", "گٹر کا پانی", "نالہ", "نالہ رساو", "گٹر رساو"
+  ],
+  "sewer_blockage": [
+    "sewer band", "gutter block", "nala band", "drain block", "blockage",
+    "sewer jam", "گٹر بند", "نالہ بند", "پائپ بند"
+  ],
+  "overflowing_manhole": [
+    "manhole overflow", "manhole full", "gutter overflow", "nala overflow",
+    "منہول بھرا", "منہول اوور فلو", "گٹر اوور فلو"
+  ],
+  "water_supply_issue": [
+    "no water", "paani nahi", "water cut", "supply off", "پانی نہیں",
+    "پانی بند", "پانی کی سپلائی"
+  ],
+  "water_leakage": [
+    "paani leak", "water leak", "pipe leak", "pipeline leak", "پانی رساو",
+    "پانی ٹپکنا", "پائپ پھٹنا"
+  ],
+  "low_water_pressure": [
+    "low pressure", "paani kam", "weak flow", "پانی کم", "کم پریشر"
+  ],
+  "broken_water_pipeline": [
+    "broken pipe", "pipeline burst", "pipe damage", "پائپ ٹوٹا", "پائپ پھٹا"
+  ],
+  "garbage_collection": [
+    "kuda", "garbage not picked", "trash", "waste", "refuse", "کوڑا",
+    "کوڑا نہیں اٹھا", "گندگی"
+  ],
+  "illegal_dumping": [
+    "dumping", "garbage dump", "illegal waste", "کوڑا پھینکنا", "غیر قانونی ڈمپنگ"
+  ],
+  "broken_road": [
+    "road broken", "sadak toot", "kharab road", "سڑک ٹوٹی", "سڑک خراب"
+  ],
+  "potholes": [
+    "pothole", "gaddha", "road hole", "سڑک کا گڑھا", "گڑھا"
+  ],
+  "damaged_footpath": [
+    "footpath broken", "pavement damage", "walkway broken", "فٹ پاتھ ٹوٹا"
+  ],
+  "broken_street_light": [
+    "street light off", "light not working", "lamp post broken", "سٹریٹ لائٹ خراب",
+    "بجلی کا کھمبا"
+  ],
+  "traffic_signal_not_working": [
+    "signal off", "traffic light broken", "signal not working", "ٹریفک سگنل خراب",
+    "سگنل نہیں چل رہا"
+  ],
+  "illegal_encroachment": [
+    "encroachment", "kabza", "illegal occupation", "غیر قانونی قبضہ", "قبضہ"
+  ],
+  "tree_fallen": [
+    "tree down", "gira hua darakht", "درخت گرا", "درخت ٹوٹا"
+  ],
+  "dead_animal_removal": [
+    "dead animal", "murda janwar", "جانور کی لاش", "مرا ہوا جانور"
+  ],
+  "drain_cleaning": [
+    "drain clean", "nali saaf", "گلی صفائی", "نالی صاف"
+  ],
+  "illegal_construction": [
+    "illegal building", "unauthorized construction", "غیر قانونی تعمیر"
+  ],
+  "building_safety_complaint": [
+    "building unsafe", "cracked building", "dangerous building", "عمارت غیر محفوظ"
+  ],
+  "park_maintenance": [
+    "park broken", "park clean", "park upkeep", "پارک خراب", "پارک صفائی"
+  ],
+  "public_toilet_issue": [
+    "toilet dirty", "public washroom", "پبلک ٹوائلٹ", "واش روم"
+  ],
+  "electricity_outage": [
+    "load shedding", "lights out", "bijli gayab", "بجلی نہیں", "لوڈ شیڈنگ"
+  ],
+  "exposed_electric_wires": [
+    "open wires", "electric hazard", "kholi taron", "کھلی تاریں", "بجلی کی تار"
+  ],
+  "gas_leakage": [
+    "gas leak", "gas smell", "گیس رساو", "گیس کی بو"
+  ],
+  "gas_supply_issue": [
+    "gas off", "low gas", "گیس نہیں", "گیس کم"
+  ],
+  "air_pollution_complaint": [
+    "smoke", "bad air", "air quality", "دھواں", "فضا آلودگی"
+  ],
+  "noise_complaint": [
+    "loud noise", "shor", "blaring", "شور", "آواز"
+  ],
+  "industrial_pollution": [
+    "factory smoke", "industrial waste", "کارخانہ آلودگی", "فیکٹری دھواں"
+  ],
+  "water_pollution": [
+    "dirty water", "polluted water", "گندا پانی", "پانی آلودہ"
+  ],
+  "dangerous_construction_site": [
+    "unsafe site", "construction hazard", "خطرناک تعمیرات"
+  ],
+  "stray_animals": [
+    "stray dog", "stray cow", "awara janwar", "آوارہ جانور"
+  ],
+  "flooding": [
+    "flood", "paani bhara", "سیلاب", "پانی جمع"
+  ],
+  "rainwater_drainage": [
+    "rain water", "standing water", "بارش کا پانی", "پانی نکاسی"
+  ],
+  "public_transport_complaint": [
+    "bus issue", "wagon problem", "transport delay", "پبلک ٹرانسپورٹ"
+  ],
+  "government_hospital_complaint": [
+    "hospital issue", "government hospital", "سرکاری ہسپتال"
+  ],
+  "government_school_complaint": [
+    "school issue", "government school", "سرکاری سکول"
+  ],
+  "birth_certificate_issue": [
+    "birth certificate", "پیدائش سرٹیفکیٹ"
+  ],
+  "death_certificate_issue": [
+    "death certificate", "موت سرٹیفکیٹ"
+  ],
+  "domicile_certificate": [
+    "domicile", "ڈومیسائل"
+  ],
+  "property_tax_issue": [
+    "property tax", "جائیداد ٹیکس"
+  ],
+  "sanitation_complaint": [
+    "safai", "gandagi", "صفائی", "گندگی"
+  ]
+}
