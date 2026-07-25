@@ -1,21 +1,38 @@
-export interface ClassificationResult {
-  issue_id: string;
-  city: string;
-  language: "en" | "ur";
-  confidence: number;
-  department: DepartmentInfo;
-  complaint_ur: string;
-  complaint_en: string;
+export interface ClassifyRequest {
+  text: string;
+  image_base64?: string | null;
+  city_hint?: string | null;
 }
 
-export interface DepartmentInfo {
+export interface ClassifyResponse {
+  issue_id: string;
+  issue_display: string;
+  city: string;
+  language: string;
+  confidence: number;
+  department: DepartmentData;
+  requirements: string[];
+  priority: string;
+  tracking: boolean;
+  escalation: string | null;
+  complaint: {
+    urdu: string;
+    english: string;
+  };
+}
+
+export interface DepartmentData {
   name: string;
   reason: string;
-  channels: Channel[];
-}
-
-export interface Channel {
-  type: "portal" | "app" | "helpline" | "email" | "office";
-  value: string;
-  label?: string;
+  portal: string | null;
+  helpline: string | null;
+  emergency_helpline: string | null;
+  app: string | null;
+  email: string | null;
+  office: string | null;
+  hours: string | null;
+  whatsapp: string | null;
+  maps_link: string | null;
+  official_website: string | null;
+  verification_status: string | null;
 }

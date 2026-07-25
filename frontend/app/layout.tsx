@@ -1,24 +1,23 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "SunoGov — AI Civic Navigator",
-  description: "Identify the right department and file your civic complaint in minutes.",
+  title: "SunoGov — Apni Baat, Sahi Jagah",
+  description:
+    "A civic complaint routing tool for Pakistani citizens. Describe any public service issue and SunoGov identifies the exact government department responsible, then helps you file a formal complaint in seconds.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en">
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className={inter.className}>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body style={{ fontFamily: "'Inter', sans-serif" }}>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

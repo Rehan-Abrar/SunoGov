@@ -1,10 +1,14 @@
 from pydantic import BaseModel, Field
 
 
+MAX_TEXT_LENGTH = 2000
+MAX_IMAGE_BASE64_LENGTH = 5_000_000  # ~3.7MB raw image
+
+
 class ClassifyRequest(BaseModel):
-    text: str = ""
-    image_base64: str | None = None
-    city_hint: str | None = None
+    text: str = Field(default="", max_length=MAX_TEXT_LENGTH)
+    image_base64: str | None = Field(default=None, max_length=MAX_IMAGE_BASE64_LENGTH)
+    city_hint: str | None = Field(default=None, max_length=100)
 
 
 class DepartmentResponse(BaseModel):
@@ -12,10 +16,15 @@ class DepartmentResponse(BaseModel):
     reason: str
     portal: str | None = None
     helpline: str | None = None
+    emergency_helpline: str | None = None
     app: str | None = None
     email: str | None = None
     office: str | None = None
     hours: str | None = None
+    whatsapp: str | None = None
+    maps_link: str | None = None
+    official_website: str | None = None
+    verification_status: str | None = None
 
 
 class ComplaintResponse(BaseModel):
@@ -35,3 +44,15 @@ class ClassifyResponse(BaseModel):
     tracking: bool = False
     escalation: str | None = None
     complaint: ComplaintResponse
+
+
+class CityItem(BaseModel):
+    id: str
+    name: str
+    issue_count: int
+
+
+class IssueItem(BaseModel):
+    issue_id: str
+    display_name: str
+    department_id: str

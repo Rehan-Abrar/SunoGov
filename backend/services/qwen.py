@@ -4,8 +4,9 @@ import re
 import logging
 import base64
 from io import BytesIO
+from concurrent.futures import ThreadPoolExecutor
 
-from openai import OpenAI, APIError, APITimeoutError, APIConnectionError
+from openai import AsyncOpenAI, APITimeoutError, APIConnectionError, APIError
 from PIL import Image
 
 logger = logging.getLogger(__name__)
@@ -13,16 +14,17 @@ logger = logging.getLogger(__name__)
 MODEL_NAME = os.getenv("QWEN_MODEL_NAME", "Qwen-Ambassador/Qwen3.7-Plus")
 BASE_URL = os.getenv("QWEN_BASE_URL", "https://api-inference.modelscope.ai/v1")
 
-_client: OpenAI | None = None
+_client: AsyncOpenAI | None = None
+_executor = ThreadPoolExecutor(max_workers=2)
 
 
-def _get_client() -> OpenAI:
+def _get_client() -> AsyncOpenAI:
     global _client
     if _client is None:
         api_key = os.getenv("MODELSCOPE_API_KEY", "")
         if not api_key:
             raise RuntimeError("MODELSCOPE_API_KEY not set in environment")
-        _client = OpenAI(base_url=BASE_URL, api_key=api_key)
+        _client = AsyncOpenAI(base_url=BASE_URL, api_key=api_key)
     return _client
 
 
@@ -72,7 +74,35 @@ def _build_classification_prompt(issue_ids: list[str], cities: list[str]) -> str
     )
 
 
-def classify_text(
+def _to_jpeg_base64_sync(image_base64: str, max_dim: int = 2048) -> str:
+    """Convert any image format to JPEG base64 and resize to fit within max_dim."""
+    try:
+        raw = base64.b64decode(image_base64)
+        img = Image.open(BytesIO(raw))
+        if img.mode in ("RGBA", "LA", "P"):
+            img = img.convert("RGB")
+        w, h = img.size
+        if w > max_dim or h > max_dim:
+            ratio = min(max_dim / w, max_dim / h)
+            new_size = (int(w * ratio), int(h * ratio))
+            img = img.resize(new_size, Image.LANCZOS)
+            logger.info(f"Resized image from {w}x{h} to {new_size[0]}x{new_size[1]}")
+        buf = BytesIO()
+        img.save(buf, format="JPEG", quality=85)
+        return base64.b64encode(buf.getvalue()).decode("utf-8")
+    except Exception as e:
+        logger.warning(f"Failed to convert image to JPEG: {e}")
+        return image_base64
+
+
+async def _to_jpeg_base64(image_base64: str, max_dim: int = 2048) -> str:
+    """Run CPU-bound image conversion in a thread pool to avoid blocking the event loop."""
+    import asyncio
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(_executor, _to_jpeg_base64_sync, image_base64, max_dim)
+
+
+async def classify_text(
     text: str,
     issue_ids: list[str],
     cities: list[str],
@@ -81,7 +111,7 @@ def classify_text(
     system_prompt = _build_classification_prompt(issue_ids, cities)
 
     try:
-        response = client.chat.completions.create(
+        response = await client.chat.completions.create(
             model=MODEL_NAME,
             messages=[
                 {"role": "system", "content": system_prompt},
@@ -104,7 +134,7 @@ def classify_text(
     result = _parse_json_response(content)
     if result is None:
         logger.error(f"Failed to parse Qwen response: {content[:500]}")
-        raise ValueError(f"Could not parse classification response")
+        raise ValueError("Could not parse classification response")
 
     result.setdefault("issue_id", None)
     result.setdefault("city", None)
@@ -119,29 +149,7 @@ def classify_text(
     return result
 
 
-def _to_jpeg_base64(image_base64: str, max_dim: int = 2048) -> str:
-    """Convert any image format to JPEG base64 and resize to fit within max_dim."""
-    try:
-        raw = base64.b64decode(image_base64)
-        img = Image.open(BytesIO(raw))
-        if img.mode in ("RGBA", "LA", "P"):
-            img = img.convert("RGB")
-        # Resize if exceeds Qwen's 2048x2048 limit
-        w, h = img.size
-        if w > max_dim or h > max_dim:
-            ratio = min(max_dim / w, max_dim / h)
-            new_size = (int(w * ratio), int(h * ratio))
-            img = img.resize(new_size, Image.LANCZOS)
-            logger.info(f"Resized image from {w}x{h} to {new_size[0]}x{new_size[1]}")
-        buf = BytesIO()
-        img.save(buf, format="JPEG", quality=85)
-        return base64.b64encode(buf.getvalue()).decode("utf-8")
-    except Exception as e:
-        logger.warning(f"Failed to convert image to JPEG: {e}")
-        return image_base64
-
-
-def classify_image(
+async def classify_image(
     image_base64: str,
     text: str,
     issue_ids: list[str],
@@ -150,8 +158,7 @@ def classify_image(
     client = _get_client()
     system_prompt = _build_classification_prompt(issue_ids, cities)
 
-    # Always normalize to JPEG ≤ 2048px — handles HEIF, AVIF, oversized, RGBA, etc.
-    jpeg_b64 = _to_jpeg_base64(image_base64)
+    jpeg_b64 = await _to_jpeg_base64(image_base64)
 
     data_url = f"data:image/jpeg;base64,{jpeg_b64}"
     user_content = [
@@ -161,7 +168,7 @@ def classify_image(
         user_content.insert(0, {"type": "text", "text": text})
 
     try:
-        response = client.chat.completions.create(
+        response = await client.chat.completions.create(
             model=MODEL_NAME,
             messages=[
                 {"role": "system", "content": system_prompt},

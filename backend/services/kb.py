@@ -60,3 +60,7 @@ def get_all_issue_ids() -> list[str]:
 
 def get_all_cities() -> list[str]:
     return list(_issues.keys())
+
+
+def get_issues_for_city(city: str) -> list[dict]:
+    return _issues.get(city, [])

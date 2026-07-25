@@ -1,5 +1,5 @@
 import SunoGovApp from "@/components/SunoGovApp";
 
-export default function Home() {
+export default function DashboardPage() {
   return <SunoGovApp />;
 }

@@ -3,9 +3,15 @@ import logging
 from fastapi import APIRouter, HTTPException
 from openai import APITimeoutError, APIConnectionError, APIError
 
-from services.models import ClassifyRequest, ClassifyResponse, DepartmentResponse, ComplaintResponse
+from services.models import (
+    ClassifyRequest, ClassifyResponse, DepartmentResponse, ComplaintResponse,
+    CityItem, IssueItem,
+)
 from services.qwen import classify_text, classify_image
-from services.kb import resolve, resolve_with_alias, get_department, get_all_issue_ids, get_all_cities
+from services.kb import (
+    resolve, resolve_with_alias, get_department,
+    get_all_issue_ids, get_all_cities, get_issues_for_city,
+)
 from services.complaint import generate_complaint
 
 logger = logging.getLogger(__name__)
@@ -18,20 +24,55 @@ async def health():
     return {"status": "ok"}
 
 
+@router.get("/cities", response_model=list[CityItem])
+async def list_cities():
+    cities = get_all_cities()
+    result = []
+    for city_name in cities:
+        issues = get_issues_for_city(city_name)
+        result.append(CityItem(
+            id=city_name.lower().replace(" ", "_"),
+            name=city_name,
+            issue_count=len(issues),
+        ))
+    return result
+
+
+@router.get("/issues/{city}", response_model=list[IssueItem])
+async def list_issues(city: str):
+    issues = get_issues_for_city(city)
+    if not issues:
+        raise HTTPException(status_code=404, detail=f"No issues found for city '{city}'")
+    return [
+        IssueItem(
+            issue_id=issue["issue_id"],
+            display_name=issue["display_name"],
+            department_id=issue["department_id"],
+        )
+        for issue in issues
+    ]
+
+
 @router.post("/classify", response_model=ClassifyResponse)
 async def classify(req: ClassifyRequest):
+    if not req.text and not req.image_base64:
+        raise HTTPException(
+            status_code=422,
+            detail="Provide at least text or an image to classify.",
+        )
+
     issue_ids = get_all_issue_ids()
     cities = get_all_cities()
 
     try:
         if req.image_base64:
-            extraction = classify_image(req.image_base64, req.text, issue_ids, cities)
+            extraction = await classify_image(req.image_base64, req.text, issue_ids, cities)
         else:
-            extraction = classify_text(req.text or "No description provided", issue_ids, cities)
+            extraction = await classify_text(req.text, issue_ids, cities)
     except APITimeoutError:
         raise HTTPException(status_code=504, detail="AI classification timed out. Please try again.")
     except APIConnectionError:
-        raise HTTPException(status_code=503, detail="AI service unavailable. Please try again.")
+        raise HTTPException(status_code=503, detail="AI service unavailable. Please try again later.")
     except (APIError, ValueError) as e:
         logger.error(f"Classification failed: {e}")
         raise HTTPException(status_code=500, detail="AI classification failed. Please try again.")
@@ -89,15 +130,25 @@ async def classify(req: ClassifyRequest):
             detail=f"Department '{issue['department_id']}' not found in knowledge base",
         )
 
+    def _clean(val: str | None) -> str | None:
+        if not val or val.lower().startswith("not "):
+            return None
+        return val
+
     department = DepartmentResponse(
         name=dept_data["department_name"],
         reason=issue.get("why_responsible", ""),
-        portal=dept_data.get("portal_url"),
-        helpline=dept_data.get("helpline"),
-        app=dept_data.get("mobile_app"),
-        email=dept_data.get("email"),
-        office=dept_data.get("office_address"),
-        hours=dept_data.get("working_hours"),
+        portal=_clean(dept_data.get("portal_url")),
+        helpline=_clean(dept_data.get("helpline")),
+        emergency_helpline=_clean(dept_data.get("emergency_helpline")),
+        app=_clean(dept_data.get("mobile_app")),
+        email=_clean(dept_data.get("email")),
+        office=_clean(dept_data.get("office_address")),
+        hours=_clean(dept_data.get("working_hours")),
+        whatsapp=_clean(dept_data.get("whatsapp")),
+        maps_link=_clean(dept_data.get("maps_link")),
+        official_website=_clean(dept_data.get("official_website")),
+        verification_status=dept_data.get("verification_status"),
     )
 
     complaint = generate_complaint(

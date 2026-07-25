@@ -1,15 +1,17 @@
 type SpeechCallback = (transcript: string) => void;
+type ErrorCallback = (error: string) => void;
 
 export function startSpeechRecognition(
   language: "en-PK" | "ur-PK",
-  onResult: SpeechCallback
-): void {
+  onResult: SpeechCallback,
+  onError?: ErrorCallback
+): { stop: () => void } {
   const SpeechRecognition =
     (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
   if (!SpeechRecognition) {
-    alert("Speech recognition is not supported in this browser.");
-    return;
+    onError?.("Speech recognition is not supported in this browser.");
+    return { stop: () => {} };
   }
 
   const recognition = new SpeechRecognition();
@@ -23,8 +25,14 @@ export function startSpeechRecognition(
   };
 
   recognition.onerror = (event: any) => {
-    console.error("Speech recognition error:", event.error);
+    onError?.(event.error);
   };
 
   recognition.start();
+
+  return {
+    stop: () => {
+      try { recognition.stop(); } catch {}
+    },
+  };
 }
