@@ -16,7 +16,8 @@
     "source": "WASA Lahore, Punjab Safe Cities Authority",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Managing Director, Water and Sanitation Agency (WASA) Lahore"
   },
   "lwmc": {
     "department_name": "Lahore Waste Management Company (LWMC)",
@@ -34,7 +35,8 @@
     "source": "LWMC, Punjab Safe Cities Authority",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-03-04"
+    "last_updated": "2025-03-04",
+    "officer_title": "The Chief Executive Officer, Lahore Waste Management Company (LWMC)"
   },
   "lda": {
     "department_name": "Lahore Development Authority (LDA)",
@@ -52,7 +54,8 @@
     "source": "LDA, Punjab Safe Cities Authority",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-03-04"
+    "last_updated": "2025-03-04",
+    "officer_title": "The Director General, Lahore Development Authority (LDA)"
   },
   "lesco": {
     "department_name": "Lahore Electric Supply Company (LESCO)",
@@ -70,7 +73,8 @@
     "source": "LESCO, Punjab Safe Cities Authority",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-03-04"
+    "last_updated": "2025-03-04",
+    "officer_title": "The Chief Executive Officer, Lahore Electric Supply Company (LESCO)"
   },
   "sngpl": {
     "department_name": "Sui Northern Gas Pipelines Limited (SNGPL)",
@@ -88,7 +92,8 @@
     "source": "SNGPL, Punjab Safe Cities Authority",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-03-04"
+    "last_updated": "2025-03-04",
+    "officer_title": "The Managing Director, Sui Northern Gas Pipelines Limited (SNGPL)"
   },
   "epd_punjab": {
     "department_name": "Environment Protection Department (EPD) Punjab",
@@ -106,7 +111,8 @@
     "source": "EPD Punjab, Punjab Safe Cities Authority",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-03-04"
+    "last_updated": "2025-03-04",
+    "officer_title": "The Director General, Environment Protection Department, Punjab"
   },
   "pitb": {
     "department_name": "Punjab Information Technology Board (PITB)",
@@ -124,7 +130,8 @@
     "source": "PITB, Punjab Safe Cities Authority",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-03-04"
+    "last_updated": "2025-03-04",
+    "officer_title": "The Chairman, Punjab Information Technology Board (PITB)"
   },
   "excise_punjab": {
     "department_name": "Excise and Taxation Department, Punjab",
@@ -142,7 +149,8 @@
     "source": "Excise and Taxation Department, Punjab Safe Cities Authority",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-03-04"
+    "last_updated": "2025-03-04",
+    "officer_title": "The Secretary, Excise and Taxation Department, Punjab"
   },
   "wasa_rawalpindi": {
     "department_name": "Water and Sanitation Agency (WASA) Rawalpindi",
@@ -160,7 +168,8 @@
     "source": "WASA Rawalpindi website",
     "official_website": "https://www.wasarwp.gop.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-12-22"
+    "last_updated": "2025-12-22",
+    "officer_title": "The Managing Director, Water and Sanitation Agency (WASA) Rawalpindi"
   },
   "rwmc": {
     "department_name": "Rawalpindi Waste Management Company (RWMC)",
@@ -178,7 +187,8 @@
     "source": "RDA website",
     "official_website": "https://www.rda.gop.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-12-22"
+    "last_updated": "2025-12-22",
+    "officer_title": "The Chief Executive Officer, Rawalpindi Waste Management Company (RWMC)"
   },
   "rda": {
     "department_name": "Rawalpindi Development Authority (RDA)",
@@ -196,7 +206,8 @@
     "source": "RDA website",
     "official_website": "https://www.rda.gop.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-12-22"
+    "last_updated": "2025-12-22",
+    "officer_title": "The Director General, Rawalpindi Development Authority (RDA)"
   },
   "kwsb": {
     "department_name": "Karachi Water and Sewerage Board (KWSB)",
@@ -214,7 +225,8 @@
     "source": "KWSB, Commissioner Karachi website",
     "official_website": "https://www.kwssip.gos.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-07-14"
+    "last_updated": "2025-07-14",
+    "officer_title": "The Managing Director, Karachi Water and Sewerage Board (KWSB)"
   },
   "kmc": {
     "department_name": "Karachi Metropolitan Corporation (KMC)",
@@ -232,7 +244,8 @@
     "source": "KMC website, Pakistan Citizen Portal",
     "official_website": "https://home.kmc.gos.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-07-14"
+    "last_updated": "2025-07-14",
+    "officer_title": "The Administrator, Karachi Metropolitan Corporation (KMC)"
   },
   "sindh_works": {
     "department_name": "Sindh Works and Services Department",
@@ -250,7 +263,8 @@
     "source": "Pakistan Citizen Portal",
     "official_website": "https://www.citizenportal.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-07-14"
+    "last_updated": "2025-07-14",
+    "officer_title": "The Secretary, Sindh Works and Services Department"
   },
   "sbca": {
     "department_name": "Sindh Building Control Authority (SBCA)",
@@ -268,7 +282,8 @@
     "source": "SBCA, Pakistan Citizen Portal",
     "official_website": "https://www.citizenportal.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-07-14"
+    "last_updated": "2025-07-14",
+    "officer_title": "The Director General, Sindh Building Control Authority (SBCA)"
   },
   "kelectric": {
     "department_name": "Karachi Electric (K-Electric)",
@@ -286,7 +301,8 @@
     "source": "K-Electric, Pakistan Citizen Portal",
     "official_website": "https://www.citizenportal.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-07-14"
+    "last_updated": "2025-07-14",
+    "officer_title": "The Chief Executive Officer, K-Electric"
   },
   "ssgc": {
     "department_name": "Sui Southern Gas Company (SSGC)",
@@ -304,7 +320,8 @@
     "source": "SSGC, Pakistan Citizen Portal",
     "official_website": "https://www.citizenportal.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-07-14"
+    "last_updated": "2025-07-14",
+    "officer_title": "The Managing Director, Sui Southern Gas Company (SSGC)"
   },
   "epd_sindh": {
     "department_name": "Sindh Environment Protection Department (EPD)",
@@ -322,7 +339,8 @@
     "source": "EPD Sindh, Pakistan Citizen Portal",
     "official_website": "https://www.citizenportal.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-07-14"
+    "last_updated": "2025-07-14",
+    "officer_title": "The Director General, Sindh Environment Protection Department (EPD)"
   },
   "cda": {
     "department_name": "Capital Development Authority (CDA)",
@@ -340,7 +358,8 @@
     "source": "CDA website, CDA complaint system",
     "official_website": "https://www.cda.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-11-22"
+    "last_updated": "2025-11-22",
+    "officer_title": "The Chairman, Capital Development Authority (CDA), Islamabad"
   },
   "iesco": {
     "department_name": "Islamabad Electric Supply Company (IESCO)",
@@ -358,7 +377,8 @@
     "source": "IESCO, Pakistan Citizen Portal",
     "official_website": "https://www.cda.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-07-14"
+    "last_updated": "2025-07-14",
+    "officer_title": "The Chief Executive Officer, Islamabad Electric Supply Company (IESCO)"
   },
   "pak_epa": {
     "department_name": "Pakistan Environmental Protection Agency (Pak-EPA)",
@@ -376,7 +396,8 @@
     "source": "Pak-EPA, Pakistan Citizen Portal",
     "official_website": "https://www.cda.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-07-14"
+    "last_updated": "2025-07-14",
+    "officer_title": "The Director General, Pakistan Environmental Protection Agency (Pak-EPA)"
   },
   "fde": {
     "department_name": "Federal Directorate of Education (FDE)",
@@ -394,7 +415,8 @@
     "source": "FDE, Pakistan Citizen Portal",
     "official_website": "https://www.cda.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-07-14"
+    "last_updated": "2025-07-14",
+    "officer_title": "The Director General, Federal Directorate of Education (FDE)"
   },
   "nadra": {
     "department_name": "National Database and Registration Authority (NADRA)",
@@ -412,7 +434,8 @@
     "source": "NADRA",
     "official_website": "https://www.nadra.gov.pk/",
     "verification_status": "Verified",
-    "last_updated": "2025-07-14"
+    "last_updated": "2025-07-14",
+    "officer_title": "The Chairman, National Database and Registration Authority (NADRA)"
   },
   "wasa_faisalabad": {
     "department_name": "Water and Sanitation Agency (WASA) Faisalabad",
@@ -430,7 +453,8 @@
     "source": "Punjab CRM (estimated)",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Managing Director, Water and Sanitation Agency (WASA) Faisalabad"
   },
   "fwmc": {
     "department_name": "Faisalabad Waste Management Company (FWMC)",
@@ -448,7 +472,8 @@
     "source": "Punjab CRM (estimated)",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Chief Executive Officer, Faisalabad Waste Management Company (FWMC)"
   },
   "fda": {
     "department_name": "Faisalabad Development Authority (FDA)",
@@ -466,7 +491,8 @@
     "source": "Punjab CRM (estimated)",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Director General, Faisalabad Development Authority (FDA)"
   },
   "fesco": {
     "department_name": "Faisalabad Electric Supply Company (FESCO)",
@@ -484,7 +510,8 @@
     "source": "Punjab CRM (estimated)",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Chief Executive Officer, Faisalabad Electric Supply Company (FESCO)"
   },
   "wasa_multan": {
     "department_name": "Water and Sanitation Agency (WASA) Multan",
@@ -502,7 +529,8 @@
     "source": "Punjab CRM (estimated)",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Managing Director, Water and Sanitation Agency (WASA) Multan"
   },
   "mepco": {
     "department_name": "Multan Electric Power Company (MEPCO)",
@@ -520,7 +548,8 @@
     "source": "Punjab CRM (estimated)",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Chief Executive Officer, Multan Electric Power Company (MEPCO)"
   },
   "wasa_gujranwala": {
     "department_name": "Water and Sanitation Agency (WASA) Gujranwala",
@@ -538,7 +567,8 @@
     "source": "Punjab CRM (estimated)",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Managing Director, Water and Sanitation Agency (WASA) Gujranwala"
   },
   "gepco": {
     "department_name": "Gujranwala Electric Power Company (GEPCO)",
@@ -556,7 +586,8 @@
     "source": "Punjab CRM (estimated)",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Chief Executive Officer, Gujranwala Electric Power Company (GEPCO)"
   },
   "wasa_sialkot": {
     "department_name": "Water and Sanitation Agency (WASA) Sialkot",
@@ -574,7 +605,8 @@
     "source": "Punjab CRM (estimated)",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Managing Director, Water and Sanitation Agency (WASA) Sialkot"
   },
   "wasa_bahawalpur": {
     "department_name": "Water and Sanitation Agency (WASA) Bahawalpur",
@@ -592,7 +624,8 @@
     "source": "Punjab CRM (estimated)",
     "official_website": "https://crm.punjab.gov.pk/",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Managing Director, Water and Sanitation Agency (WASA) Bahawalpur"
   },
   "wasa_peshawar": {
     "department_name": "Water and Sanitation Agency (WASA) Peshawar",
@@ -610,7 +643,8 @@
     "source": "Estimated based on provincial structure",
     "official_website": "Not officially available.",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Managing Director, Water and Sanitation Agency (WASA) Peshawar"
   },
   "pda": {
     "department_name": "Peshawar Development Authority (PDA)",
@@ -628,7 +662,8 @@
     "source": "Estimated",
     "official_website": "Not officially available.",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Director General, Peshawar Development Authority (PDA)"
   },
   "pesco": {
     "department_name": "Peshawar Electric Supply Company (PESCO)",
@@ -646,7 +681,8 @@
     "source": "Estimated",
     "official_website": "Not officially available.",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Chief Executive Officer, Peshawar Electric Supply Company (PESCO)"
   },
   "wasa_quetta": {
     "department_name": "Water and Sanitation Agency (WASA) Quetta",
@@ -664,7 +700,8 @@
     "source": "Estimated",
     "official_website": "Not officially available.",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Managing Director, Water and Sanitation Agency (WASA) Quetta"
   },
   "qesco": {
     "department_name": "Quetta Electric Supply Company (QESCO)",
@@ -682,7 +719,8 @@
     "source": "Estimated",
     "official_website": "Not officially available.",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Chief Executive Officer, Quetta Electric Supply Company (QESCO)"
   },
   "wasa_hyderabad": {
     "department_name": "Water and Sanitation Agency (WASA) Hyderabad",
@@ -700,7 +738,8 @@
     "source": "Pakistan Citizen Portal (estimated)",
     "official_website": "https://www.citizenportal.gov.pk/",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Managing Director, Water and Sanitation Agency (WASA) Hyderabad"
   },
   "hesco": {
     "department_name": "Hyderabad Electric Supply Company (HESCO)",
@@ -718,7 +757,8 @@
     "source": "Estimated",
     "official_website": "https://www.citizenportal.gov.pk/",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Chief Executive Officer, Hyderabad Electric Supply Company (HESCO)"
   },
   "wasa_sukkur": {
     "department_name": "Water and Sanitation Agency (WASA) Sukkur",
@@ -736,7 +776,8 @@
     "source": "Pakistan Citizen Portal (estimated)",
     "official_website": "https://www.citizenportal.gov.pk/",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Managing Director, Water and Sanitation Agency (WASA) Sukkur"
   },
   "municipal_abbottabad": {
     "department_name": "Municipal Committee Abbottabad",
@@ -754,7 +795,8 @@
     "source": "Estimated",
     "official_website": "Not officially available.",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Chief Officer, Municipal Committee Abbottabad"
   },
   "municipal_gilgit": {
     "department_name": "Municipal Committee Gilgit",
@@ -772,7 +814,8 @@
     "source": "Estimated",
     "official_website": "Not officially available.",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Chief Officer, Municipal Committee Gilgit"
   },
   "epd_kpk": {
     "department_name": "Environmental Protection Agency, Khyber Pakhtunkhwa (EPA KPK)",
@@ -790,7 +833,8 @@
     "source": "Estimated based on provincial structure",
     "official_website": "Not officially available.",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Director General, Environmental Protection Agency, Khyber Pakhtunkhwa (EPA KPK)"
   },
   "epd_balochistan": {
     "department_name": "Environmental Protection Agency, Balochistan (EPA Balochistan)",
@@ -808,7 +852,8 @@
     "source": "Estimated based on provincial structure",
     "official_website": "Not officially available.",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Director General, Environmental Protection Agency, Balochistan (EPA Balochistan)"
   },
   "epd_gb": {
     "department_name": "Environmental Protection Agency, Gilgit-Baltistan (EPA GB)",
@@ -826,6 +871,7 @@
     "source": "Estimated based on regional structure",
     "official_website": "Not officially available.",
     "verification_status": "Estimated",
-    "last_updated": "2026-07-25"
+    "last_updated": "2026-07-25",
+    "officer_title": "The Director General, Environmental Protection Agency, Gilgit-Baltistan (EPA GB)"
   }
 }

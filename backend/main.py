@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from routers import classify
+from routers import classify, application
 from services.kb import load_knowledge_base
 
 load_dotenv()
@@ -22,6 +22,7 @@ app.add_middleware(
 )
 
 app.include_router(classify.router)
+app.include_router(application.router)
 
 
 @app.on_event("startup")
