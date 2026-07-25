@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import gsap from "gsap";
+import jsPDF from "jspdf";
 import {
   Scales,
   MagnifyingGlass,
@@ -76,7 +77,6 @@ const T = {
       { title: "Submit", body: "Get a formal complaint with the right contacts." },
     ],
     coverageNote: "No accounts. No tracking. We route, we do not store.",
-    yourComplaint: "Your complaint",
     howToSubmit: "How to submit",
     cmdHint: "Cmd+Enter",
   },
@@ -104,7 +104,6 @@ const T = {
       { title: "جمع کریں", body: "صحیح رابطوں کے ساتھ باقاعدہ شکایت حاصل کریں۔" },
     ],
     coverageNote: "کوئی اکاؤنٹ نہیں۔ کوئی ٹریکنگ نہیں۔ ہم روٹ کرتے ہیں، ذخیرہ نہیں کرتے۔",
-    yourComplaint: "آپ کی شکایت",
     howToSubmit: "جمع کرنے کا طریقہ",
     cmdHint: "Cmd+Enter",
   },
@@ -932,6 +931,53 @@ interface Channel {
   href: string | null;
 }
 
+function downloadPDF(content: string, filename: string, isUrdu: boolean = false) {
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 20;
+  const maxWidth = pageWidth - 2 * margin;
+  let yPos = margin;
+
+  // Header
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.text("SunoGov", pageWidth / 2, yPos, { align: "center" });
+  yPos += 6;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text("Apni Baat, Sahi Jagah", pageWidth / 2, yPos, { align: "center" });
+  yPos += 10;
+
+  // Divider
+  doc.setLineWidth(0.5);
+  doc.line(margin, yPos, pageWidth - margin, yPos);
+  yPos += 10;
+
+  // Content
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "normal");
+
+  const lines = doc.splitTextToSize(content, maxWidth);
+  const lineHeight = 6;
+
+  for (const line of lines) {
+    if (yPos + lineHeight > pageHeight - margin) {
+      doc.addPage();
+      yPos = margin;
+    }
+    doc.text(line, margin, yPos);
+    yPos += lineHeight;
+  }
+
+  doc.save(`${filename}.pdf`);
+}
+
 function buildChannels(dept: ClassifyResponse["department"]): Channel[] {
   const channels: Channel[] = [];
   if (dept.portal) {
@@ -1000,7 +1046,6 @@ function ResultsPage({
   const containerRef = useRef<HTMLDivElement>(null);
   const { lang } = useLang();
   const t = T[lang];
-  const [activeTab, setActiveTab] = useState<"en" | "ur">("en");
   const [copiedOffice, setCopiedOffice] = useState(false);
 
   // ── SmartForm state ──
@@ -1054,8 +1099,6 @@ function ResultsPage({
   }
 
   const channels = buildChannels(result.department);
-  const complaintEn = result.complaint.english;
-  const complaintUr = result.complaint.urdu;
 
   const copyOffice = (value: string) => {
     navigator.clipboard.writeText(value).then(() => {
@@ -1172,98 +1215,6 @@ function ResultsPage({
                 )}
               </motion.div>
             ))}
-          </div>
-        </div>
-
-        {/* ── Complaint Box ─────────────────────────────────────────── */}
-        <div className="sg-result-section">
-          <div className="flex items-center justify-between mb-3 sm:mb-2 px-1">
-            <p className="text-[12px] sm:text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.08em]">
-              {t.yourComplaint}
-            </p>
-            <div className="flex items-center gap-0.5">
-              {(["en", "ur"] as const).map((l) => (
-                <motion.button
-                  key={l}
-                  whileHover={activeTab === l ? {} : { y: -1 }}
-                  whileTap={{ scale: 0.93 }}
-                  transition={SPRING_SNAPPY}
-                  onClick={() => setActiveTab(l)}
-                  className={`relative px-3.5 sm:px-2.5 h-8 sm:h-6 rounded-lg sm:rounded-md text-[13px] sm:text-[11px] font-medium focus-visible:outline-none ${
-                    l === "ur" ? "font-['Noto_Nastaliq_Urdu',serif]" : ""
-                  } ${
-                    activeTab === l
-                      ? "text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {activeTab === l && (
-                    <motion.span
-                      layoutId="lang-tab-pill-results"
-                      className="absolute inset-0 rounded-lg sm:rounded-md bg-muted shadow-sm"
-                      transition={{ type: "spring", stiffness: 500, damping: 32 }}
-                    />
-                  )}
-                  <span className="relative z-10">{l === "en" ? "English" : "اردو"}</span>
-                </motion.button>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-3xl sm:rounded-3xl bg-card border border-border overflow-hidden">
-            <div className="flex items-center justify-between px-5 sm:px-5 py-3.5 sm:py-2.5 border-b border-border">
-              <div className="flex items-center gap-2">
-                <FileText size={14} weight="duotone" className="text-muted-foreground sm:hidden" />
-                <FileText size={12} weight="duotone" className="text-muted-foreground hidden sm:block" />
-                <span className="text-[13px] sm:text-[11px] text-muted-foreground">
-                  {activeTab === "en" ? "complaint-en.txt" : "complaint-ur.txt"}
-                </span>
-              </div>
-              <CopyButton text={activeTab === "en" ? complaintEn : complaintUr} />
-            </div>
-
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                className="p-5 sm:p-5"
-              >
-                <pre
-                  dir={activeTab === "ur" ? "rtl" : "ltr"}
-                  className={`whitespace-pre-wrap text-[14px] sm:text-[12.5px] text-foreground leading-relaxed ${
-                    activeTab === "ur"
-                      ? "font-['Noto_Nastaliq_Urdu',serif] text-[16px] sm:text-[14px] leading-[2.1] text-right"
-                      : "font-['JetBrains_Mono',monospace]"
-                  }`}
-                >
-                  {activeTab === "en" ? complaintEn : complaintUr}
-                </pre>
-              </motion.div>
-            </AnimatePresence>
-
-            <div className="px-5 sm:px-5 py-4 sm:py-3 border-t border-border">
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  const content = activeTab === "en" ? complaintEn : complaintUr;
-                  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `complaint-${activeTab}.txt`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-                className="w-full flex items-center justify-center gap-2.5 h-10 sm:h-8 rounded-xl border border-border text-[14px] sm:text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              >
-                <DownloadSimple size={16} weight="bold" className="sm:hidden" />
-                <DownloadSimple size={13} weight="bold" className="hidden sm:block" />
-                Download as .txt
-              </motion.button>
-            </div>
           </div>
         </div>
 
@@ -1586,52 +1537,17 @@ function ResultsPage({
                     </pre>
                   </div>
 
-                  <div className="px-5 sm:px-6 py-4 sm:py-3 border-t border-border flex items-center gap-2">
+                  <div className="px-5 sm:px-6 py-4 sm:py-3 border-t border-border">
                     <motion.button
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
-                        const blob = new Blob([letter], { type: "text/plain;charset=utf-8" });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = `application-${formLang === "urdu" ? "ur" : "en"}.txt`;
-                        a.click();
-                        URL.revokeObjectURL(url);
+                        downloadPDF(letter, `application-${formLang === "urdu" ? "ur" : "en"}`, formLang === "urdu");
                       }}
-                      className="flex-1 flex items-center justify-center gap-2 h-10 sm:h-8 rounded-xl border border-border text-[13px] sm:text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                      className="w-full flex items-center justify-center gap-2 h-10 sm:h-8 rounded-xl bg-primary text-primary-foreground text-[13px] sm:text-[12px] font-semibold hover:opacity-90 transition-opacity"
                     >
                       <DownloadSimple size={14} weight="bold" className="sm:hidden" />
                       <DownloadSimple size={12} weight="bold" className="hidden sm:block" />
-                      .txt
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        const printWindow = window.open("", "_blank");
-                        if (!printWindow) return;
-                        const isUrdu = formLang === "urdu";
-                        printWindow.document.write(`<!DOCTYPE html><html><head><title>SunoGov — Application</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-@page { size: A4; margin: 25mm; }
-body { font-family: ${isUrdu ? "'Noto Nastaliq Urdu', serif" : "'JetBrains Mono', monospace"}; font-size: ${isUrdu ? "16px" : "13px"}; line-height: ${isUrdu ? "2.2" : "1.7"}; color: #111; direction: ${isUrdu ? "rtl" : "ltr"}; text-align: ${isUrdu ? "right" : "left"}; }
-pre { white-space: pre-wrap; word-wrap: break-word; margin: 0; }
-.header { text-align: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #ddd; }
-.header h1 { font-size: 20px; margin: 0 0 4px; }
-.header p { font-size: 11px; color: #888; margin: 0; }
-@media print { body { -webkit-print-color-adjust: exact; } }
-</style></head><body>
-<div class="header"><h1>SunoGov</h1><p>Apni Baat, Sahi Jagah</p></div>
-<pre>${letter.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
-</body></html>`);
-                        printWindow.document.close();
-                        setTimeout(() => { printWindow.print(); }, 400);
-                      }}
-                      className="flex-1 flex items-center justify-center gap-2 h-10 sm:h-8 rounded-xl bg-primary text-primary-foreground text-[13px] sm:text-[12px] font-semibold hover:opacity-90 transition-opacity"
-                    >
-                      <DownloadSimple size={14} weight="bold" className="sm:hidden" />
-                      <DownloadSimple size={12} weight="bold" className="hidden sm:block" />
-                      {formLang === "urdu" ? "PDF ڈاؤنلوڈ" : "Download PDF"}
+                      {formLang === "urdu" ? "PDF ڈاؤنلوڈ کریں" : "Download PDF"}
                     </motion.button>
                   </div>
                 </div>
