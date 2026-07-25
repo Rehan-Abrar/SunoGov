@@ -1,141 +1,192 @@
 # Phases — SunoGov
-**Development Roadmap (7-Hour Hackathon)**
+**Development Roadmap (7-Hour Hackathon) — 2 Person Team**
 
 ---
 
-## Phase 1 — Setup (30 min)
+## Team Split
 
-**Goal:** Repos, environments, and data files in place.
+| Person | Role | Owns |
+|--------|------|------|
+| **Person A** | Backend + AI + DevOps | FastAPI, Qwen integration, KB, deployment |
+| **Person B** | Frontend | Next.js, all UI components, voice input, PDF |
 
-- [ ] Create GitHub repo (`sunogov`)
-- [ ] Initialize Next.js 14 app (`/frontend`)
-- [ ] Initialize FastAPI project (`/backend`)
-- [ ] Add `departments.json`, `issues.json`, `aliases.json` to `/backend/data/`
-- [ ] Add the 3 missing departments to `departments.json`: `epd_kpk`, `epd_balochistan`, `epd_gb`
-- [ ] Create `.env` with `QWEN_API_KEY`
-- [ ] Add `.env` to `.gitignore`
-- [ ] Install backend deps: `fastapi`, `uvicorn`, `python-dotenv`, `httpx`, `pydantic`
-- [ ] Install frontend deps: `tailwindcss`, `framer-motion`
-
-**Exit Criteria:** Both servers run locally (`uvicorn main:app` + `npm run dev`).
+> Person A and B work in parallel from Phase 2 onwards. Person B uses mock API responses until the real backend is ready.
 
 ---
 
-## Phase 2 — Backend Core (90 min)
+## Phase 1 — Setup (30 min) — BOTH TOGETHER
 
-**Goal:** `/classify` endpoint working end-to-end with hardcoded test input.
+**Goal:** Repo, environments, and data files in place. Do this together so you're on the same page.
+
+- [ ] **Both:** Create GitHub repo (`sunogov`), set up folder structure
+- [ ] **A:** Initialize FastAPI project (`/backend`), install deps: `fastapi uvicorn python-dotenv httpx pydantic`
+- [ ] **A:** Add `departments.json`, `issues.json`, `aliases.json` to `/backend/data/`
+- [ ] **A:** Add the 3 missing departments to `departments.json`: `epd_kpk`, `epd_balochistan`, `epd_gb`
+- [ ] **A:** Create `.env` with `QWEN_API_KEY`, add to `.gitignore`
+- [ ] **B:** Initialize Next.js 14 app (`/frontend`), install deps: `tailwindcss framer-motion`
+- [ ] **B:** Create `.env.local` with `NEXT_PUBLIC_API_URL=http://localhost:8000`
+- [ ] **Both:** Agree on the final API response shape (see Architecture.md) — B will mock this
+
+**Exit Criteria:** Both servers run locally. Both have read Architecture.md.
+
+---
+
+## Phase 2 — Parallel Work Begins (90 min)
+
+### Person A — Backend Core
+
+**Goal:** `/classify` endpoint working with real KB lookup (Qwen stubbed for now).
 
 - [ ] Load all 3 JSON files at startup into module-level dicts
-- [ ] Build `lookup[(city, issue_id)]` index at startup
+- [ ] Build `lookup[(city, issue_id)]` index at startup (`kb.py`)
 - [ ] Write Pydantic request model: `{ text, image_base64, city_hint }`
 - [ ] Write Pydantic response model (full structure per Architecture.md)
-- [ ] Implement alias fallback: if Qwen returns unknown `issue_id`, fuzzy match against `aliases.json`
+- [ ] Stub Qwen: hardcode `issue_id="sewer_leakage"`, `city="Lahore"` for now
 - [ ] Implement department join: `issue["department_id"]` → `departments[dept_id]`
+- [ ] Implement alias fallback function (even if not wired to Qwen yet)
 - [ ] Enable CORS for `localhost:3000`
-- [ ] Test with Postman: send `"gutter ka pani lahore mein"` → verify WASA Lahore response
-- [ ] Test 4-5 more cases: electricity Karachi, garbage Islamabad, broken road Rawalpindi
+- [ ] Test in Postman: verify full response shape matches what B expects
 
-**Exit Criteria:** `/classify` returns correct department + submission hub for all test cases.
+**Exit Criteria:** `/classify` returns correct full response for stubbed input.
 
 ---
 
-## Phase 3 — Qwen Integration (60 min)
+### Person B — Frontend Core
 
-**Goal:** Real Qwen calls replacing any hardcoded classification.
+**Goal:** Full UI built against a mock API response.
 
-- [ ] Write `classify_with_qwen(text)` function with correct prompt
+- [ ] Create `types.ts` — define TypeScript interfaces matching the API response shape
+- [ ] Create `api.ts` — `POST /classify` wrapper, but return mock data for now:
+  ```ts
+  // mock response hardcoded in api.ts during dev
+  ```
+- [ ] Build `InputPanel.tsx` — textarea + submit button
+- [ ] Build `ReasoningCard.tsx` — Issue, Department, Why, Confidence badge (green/amber/red)
+- [ ] Build `SubmissionHub.tsx` — portal button, helpline, app, office, hours; show `—` for unavailable fields
+- [ ] Build `ComplaintBox.tsx` — Urdu / English tabs, copy button, Urdu tab default, RTL + Noto Nastaliq Urdu font
+- [ ] Build `page.tsx` — wire all components, show loading spinner during call, show error state
+- [ ] Flag `"Estimated"` entries with ⚠️ disclaimer
+
+**Exit Criteria:** Full UI renders correctly with mock data. Looks polished enough to demo.
+
+---
+
+## Phase 3 — Qwen Integration + Connect Frontend (60 min)
+
+### Person A — Qwen Integration
+
+**Goal:** Replace stub with real Qwen calls.
+
+- [ ] Write `classify_with_qwen(text)` in `qwen.py` with correct classification prompt
 - [ ] Write `classify_with_qwen_vision(image_base64)` for image input
-- [ ] Parse and validate Qwen JSON response
-- [ ] Handle: invalid JSON, unknown `issue_id`, missing `city`, API timeout
+- [ ] Parse and validate Qwen JSON response — strip markdown fences before parsing
+- [ ] Handle all error cases: invalid JSON, unknown `issue_id`, missing `city`, timeout
 - [ ] If `confidence < 0.7` or `issue_id` invalid → trigger alias fallback
-- [ ] Add complaint generation: template fill for both Urdu + English
-- [ ] Optional: Qwen rewrite call for complaint personalization
-- [ ] Test Urdu input end-to-end: `"teen din se hamari gali mein gutter ka pani khara hai"`
+- [ ] Add complaint generation in `complaint.py`: template fill for Urdu + English
+- [ ] Optional: second Qwen call to rewrite/personalize complaint
+- [ ] Test end-to-end: `"teen din se hamari gali mein gutter ka pani khara hai"` → WASA Lahore
 
-**Exit Criteria:** Full pipeline works with real Qwen API. Urdu input → correct routing → bilingual complaint.
-
----
-
-## Phase 4 — Frontend Core (60 min)
-
-**Goal:** Working UI that calls backend and renders results.
-
-- [ ] Build `InputPanel` component: text area + submit button
-- [ ] Build `/lib/api.ts`: `POST /classify` wrapper with error handling
-- [ ] Build `ReasoningCard`: Issue, Department, Why, Confidence badge
-- [ ] Build `SubmissionHub`: portal button, helpline, app, office, hours
-- [ ] Build `ComplaintBox`: two tabs (Urdu / English), copy button
-- [ ] Show loading spinner during API call
-- [ ] Show error message (Urdu + English) if API fails
-- [ ] Flag `"Estimated"` entries with a small disclaimer
-
-**Exit Criteria:** Full flow works in browser: type complaint → see department + complaint.
+**Exit Criteria:** Full pipeline live. Urdu input → correct routing → bilingual complaint.
 
 ---
 
-## Phase 5 — Voice + Image (60 min)
+### Person B — Voice Input + Connect to Real API
 
-**Goal:** Voice and image inputs working. Voice is priority.
+**Goal:** Swap mock for real API. Add voice.
 
-**Voice (do first):**
-- [ ] Build `speech.ts`: wrap `window.SpeechRecognition` with `lang: 'ur-PK'` default
-- [ ] Add mic button to `InputPanel` with recording indicator (pulsing animation)
-- [ ] On recognition result → auto-fill text area → auto-submit
-- [ ] Test: speak `"gutter ka pani"` → verify it classifies correctly
+- [ ] Update `api.ts` — remove mock, point to real `POST /classify`
+- [ ] Test all UI components with real API responses
+- [ ] Create `speech.ts` — wrap `window.SpeechRecognition` with `lang: 'ur-PK'`
+- [ ] Add mic button to `InputPanel` with pulsing green ring animation while recording
+- [ ] On recognition result → auto-fill textarea → auto-submit
+- [ ] Test voice in Chrome: speak `"gutter ka pani"` → verify correct result
 
-**Image (do second):**
-- [ ] Add image upload button to `InputPanel`
-- [ ] Convert image to base64 in browser
-- [ ] Send as `image_base64` in request body
-- [ ] Backend passes to Qwen Vision for description → then classifies
-
-**Exit Criteria:** Voice demo works in Chrome. Image upload triggers correct classification.
+**Exit Criteria:** Voice works in Chrome. Real API wired. Full flow works end-to-end.
 
 ---
 
-## Phase 6 — Polish + PDF (45 min)
+## Phase 4 — Image + PDF + Polish (60 min)
 
-**Goal:** Product looks and feels finished for judges.
+### Person A — Image Backend + Deploy
 
-- [ ] Add SunoGov logo/wordmark (simple SVG or text logo)
-- [ ] Add "Open Official Portal" button (opens in new tab)
-- [ ] PDF export: print CSS with clean complaint layout, or react-pdf
-- [ ] Mobile responsive check (judges may view on phone)
-- [ ] Add Reasoning Card confidence bar/badge
-- [ ] Handle edge case: city not detected → ask user to specify city
-- [ ] Final UI pass: spacing, typography, colors (see Design.md)
+**Goal:** Image input wired, backend deployed.
 
-**Exit Criteria:** App looks polished. PDF downloads correctly. Mobile works.
+- [ ] Wire `classify_with_qwen_vision` into the `/classify` endpoint for `image_base64` input
+- [ ] Test image input: upload garbage pile photo → correct classification
+- [ ] Deploy backend to Railway or Render
+- [ ] Set `QWEN_API_KEY` env var on Railway/Render
+- [ ] Test live backend URL with Postman
+- [ ] Share live backend URL with B
+
+**Exit Criteria:** Backend live on Railway/Render. Image input works.
 
 ---
 
-## Phase 7 — Deploy + Demo Prep (45 min)
+### Person B — Image Frontend + PDF + Polish
 
-**Goal:** Live URL + rehearsed demo ready for judges.
+**Goal:** Image upload UI, PDF export, final polish.
 
-- [ ] Deploy backend to Railway or Render, set `QWEN_API_KEY` env var
-- [ ] Deploy frontend to Vercel, set `NEXT_PUBLIC_API_URL` env var
-- [ ] Test live URL end-to-end (not just localhost)
-- [ ] Write clean `README.md` using existing pitch content
-- [ ] Push final code to GitHub
-- [ ] Rehearse 3 demo flows:
-  1. Urdu voice: `"gutter ka pani khara hai"` → WASA Lahore
-  2. English text: `"broken road in F-7 Islamabad"` → CDA
-  3. Image: photo of garbage pile → LWMC / KMC
-- [ ] Time the demo: target under 90 seconds
+- [ ] Add image upload button to `InputPanel` — convert to base64, send as `image_base64`
+- [ ] PDF export: use print CSS (`@media print`) or `react-pdf` — clean complaint layout
+- [ ] Add "Open Official Portal" button — opens in new tab
+- [ ] Add SunoGov logo/wordmark (simple SVG text logo, Pakistan Green)
+- [ ] Mobile responsive check — all sections stack correctly on 375px
+- [ ] Handle edge case: `city: null` in response → show city input prompt to user
+- [ ] Final UI pass: spacing, typography, colors per Design.md
+- [ ] Update `api.ts` to point to live Railway/Render URL
 
-**Exit Criteria:** Live URL works. GitHub repo is clean. Team has rehearsed demo 2+ times.
+**Exit Criteria:** Image upload works. PDF downloads. App looks finished. Mobile works.
+
+---
+
+## Phase 5 — Deploy Frontend + Demo Prep (30 min) — BOTH
+
+**Goal:** Live URL working. Demo rehearsed.
+
+- [ ] **B:** Deploy frontend to Vercel, set `NEXT_PUBLIC_API_URL` to Railway URL
+- [ ] **Both:** Test full flow on live URL (not localhost)
+- [ ] **Both:** Push clean final code to GitHub
+- [ ] **Both:** Rehearse 3 demo flows (2+ times each):
+
+  **Demo 1 — Urdu Voice** *(most impressive — do this first for judges)*
+  > Speak: "Teen din se hamari gali mein gutter ka pani khara hai, Johar Town Lahore"
+  > Expected: Sewer Leakage → WASA Lahore → helpline 15 → Urdu complaint
+
+  **Demo 2 — English Text**
+  > Type: "broken road near F-7 markaz Islamabad"
+  > Expected: Broken Road → CDA → portal + office → English complaint
+
+  **Demo 3 — Image**
+  > Upload: photo of garbage pile
+  > Expected: Garbage Collection → LWMC (Lahore) or KMC (Karachi)
+
+- [ ] **Both:** Time the demo — target under 90 seconds total
+
+**Exit Criteria:** Live URL works. GitHub clean. Both have rehearsed. Demo is under 90 seconds.
 
 ---
 
 ## Cut List (if running behind)
 
-Cut in this order — least impact first:
+Cut in this order — least impact on score:
 
-1. Image/Vision input
-2. PDF export
-3. Coverage beyond 5 core cities
-4. Complaint Qwen rewrite (use template only)
-5. Framer Motion animations
+1. Framer Motion animations
+2. Image/Vision input *(cut if Qwen Vision is flaky)*
+3. PDF export *(use copy button as fallback)*
+4. Complaint Qwen rewrite *(use template only — still looks great)*
+5. Coverage beyond Lahore, Karachi, Islamabad
 
-**Never cut:** Voice input, Reasoning Card, Submission Hub, Urdu complaint.
+**Never cut:** Voice input, Reasoning Card, Submission Hub, Urdu complaint, Confidence badge.
+
+---
+
+## Sync Points
+
+These are moments where A and B must coordinate:
+
+| When | What |
+|------|------|
+| End of Phase 1 | Agree on exact API response JSON shape |
+| Start of Phase 3 | B switches from mock to real API — A must have `/classify` ready |
+| End of Phase 4 | A shares live backend URL so B can update `api.ts` |
+| Phase 5 | Both test live URL together before demo rehearsal |
